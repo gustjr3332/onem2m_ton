@@ -1,0 +1,148 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "EdgePdM: oneM2M Hackathon Roadmap",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "lanes": [
+    {
+      "id": "main",
+      "label": "Timeline"
+    }
+  ],
+  "mainPath": [
+    "apply",
+    "kickoff",
+    "w12",
+    "w34",
+    "w56",
+    "w7"
+  ],
+  "nodes": [
+    {
+      "id": "apply",
+      "lane": "main",
+      "col": 0,
+      "type": "external",
+      "label": "Apply + Week 0 Prep",
+      "sublabel": "9/17-10/4, oneM2M basics + ACME-CSE",
+      "tag": "first-timer buffer",
+      "width": 190
+    },
+    {
+      "id": "kickoff",
+      "lane": "main",
+      "col": 1,
+      "type": "external",
+      "label": "Kick-off",
+      "sublabel": "10/5, confirm MEC env",
+      "width": 92
+    },
+    {
+      "id": "w12",
+      "lane": "main",
+      "col": 2,
+      "type": "backend",
+      "label": "Weeks 1-2",
+      "sublabel": "Sensor to oneM2M, data collection",
+      "width": 150
+    },
+    {
+      "id": "w34",
+      "lane": "main",
+      "col": 3,
+      "type": "backend",
+      "label": "Weeks 3-4",
+      "sublabel": "AI model, MEC integration",
+      "tag": "MVP",
+      "width": 110
+    },
+    {
+      "id": "w56",
+      "lane": "main",
+      "col": 4,
+      "type": "backend",
+      "label": "Weeks 5-6",
+      "sublabel": "Multi-site, benchmark",
+      "width": 92
+    },
+    {
+      "id": "w7",
+      "lane": "main",
+      "col": 5,
+      "type": "external",
+      "label": "Week 7 + Present",
+      "sublabel": "Submit 11/20, present 11/23-27",
+      "width": 150
+    }
+  ],
+  "edges": [
+    {
+      "from": "apply",
+      "to": "kickoff",
+      "variant": "emphasis"
+    },
+    {
+      "from": "kickoff",
+      "to": "w12",
+      "variant": "emphasis"
+    },
+    {
+      "from": "w12",
+      "to": "w34",
+      "variant": "emphasis"
+    },
+    {
+      "from": "w34",
+      "to": "w56",
+      "variant": "emphasis"
+    },
+    {
+      "from": "w56",
+      "to": "w7",
+      "variant": "emphasis"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Application Phase",
+      "items": [
+        "Four sections: overview, implementation, capability, effects",
+        "Dual scenario: factory and logistics",
+        "oneM2M + ETSI MEC standards"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Week 0: First-timer Buffer",
+      "items": [
+        "Team is new to oneM2M: concepts + ACME-oneM2M-CSE tutorial before coding",
+        "Done when Subscription/Notification can be reproduced from scratch",
+        "Local Flask MEC mock built in case kick-off platform is late"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Development Sprints",
+      "items": [
+        "Weeks 1-2: sensor to CSE pipeline, labeled data",
+        "Weeks 3-4: MVP end to end with MEC",
+        "Weeks 5-6: multi-site dashboard, benchmark (zone hand-off out of scope)",
+        "Week 7: code public, demo ready"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Deliverables",
+      "items": [
+        "Source code: Apache 2.0",
+        "Docs and tutorials: CC BY 4.0",
+        "10-minute demo video",
+        "Presentation script"
+      ]
+    }
+  ]
+}

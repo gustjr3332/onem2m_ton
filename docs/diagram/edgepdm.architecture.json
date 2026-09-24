@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "EdgePdM 아키텍처 (A안)",
+    "subtitle": "회전설비 예지보전 · oneM2M + ETSI MEC",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "components": [
+    { "id": "sensor-node", "type": "external", "label": "Sensor Node", "sublabel": "Arduino sensors", "pos": [40, 240], "size": [160, 64] },
+    { "id": "edge-ae", "type": "backend", "label": "Edge ADN-AE", "sublabel": "Python gateway", "pos": [300, 240], "size": [150, 64] },
+    { "id": "mn-cse", "type": "messagebus", "label": "MN-CSE", "sublabel": "ACME-oneM2M-CSE · /pdm/site", "pos": [540, 240], "size": [160, 64] },
+    { "id": "mec-app", "type": "backend", "label": "PdM Inference", "sublabel": "MEC app: fault classifier", "pos": [800, 240], "size": [170, 64] },
+    { "id": "mec-platform", "type": "cloud", "label": "MEC Platform", "sublabel": "Mp1 registry", "pos": [800, 80], "size": [170, 64] },
+    { "id": "worker", "type": "frontend", "label": "Maintenance Worker", "sublabel": "alert + action", "pos": [1060, 240], "size": [170, 64] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "Factory / Logistics site", "wraps": ["sensor-node", "edge-ae", "mn-cse"] },
+    { "kind": "region", "label": "MEC host", "wraps": ["mec-app", "mec-platform"] }
+  ],
+  "connections": [
+    { "id": "uart", "from": "sensor-node", "to": "edge-ae", "label": "UART", "variant": "emphasis" },
+    { "id": "post-cin", "from": "edge-ae", "to": "mn-cse", "label": "POST CIN", "variant": "emphasis" },
+    { "id": "notify", "from": "mn-cse", "to": "mec-app", "label": "SUB notify", "variant": "emphasis" },
+    { "id": "register", "from": "mec-app", "to": "mec-platform", "label": "Mp1 register", "variant": "security", "fromSide": "top", "toSide": "bottom" },
+    { "id": "alert", "from": "mec-app", "to": "worker", "label": "감속/정지 명령", "variant": "emphasis" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "공통 파이프라인", "items": ["센서 → Edge AE → MN-CSE → MEC 추론 → 대응", "SITE_TYPE 환경변수로 팩토리/물류 분기"] },
+    { "dot": "amber", "title": "AI/MEC", "items": ["진동·전류·온도 기반 고장 분류", "엣지/클라우드 지연시간 벤치마크"] }
+  ]
+}
