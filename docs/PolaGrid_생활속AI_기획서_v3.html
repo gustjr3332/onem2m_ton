@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>PolaGrid 기획서 v3</title>
+<style>
+  @page {
+    size: A4;
+    margin: 16mm 18mm 15mm 18mm;
+    @bottom-center { content: counter(page) " / " counter(pages); font-family: 'Malgun Gothic', sans-serif; font-size: 9pt; color: #777; }
+  }
+  :root {
+    --ink: #16202b;
+    --accent: #1f3a5f;
+    --sun: #d98c1f;
+    --glare: #c0521f;
+    --tint: #eef3f8;
+    --line: #c9d3de;
+    --muted: #5b6673;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #fff; }
+  body {
+    font-family: 'Malgun Gothic', 'Noto Sans KR', sans-serif;
+    font-size: 12pt; line-height: 1.6; color: var(--ink);
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    word-break: keep-all; overflow-wrap: break-word;
+  }
+  .kicker { font-size: 9.5pt; color: var(--muted); letter-spacing: 0.02em; border-bottom: 1px solid var(--line); padding-bottom: 2pt; margin-bottom: 6pt; }
+  h1 { font-size: 17pt; line-height: 1.32; margin: 0 0 3pt; color: var(--accent); }
+  .sub { font-size: 12pt; color: var(--muted); margin: 0 0 7pt; }
+  h2 { font-size: 13pt; line-height: 1.4; margin: 8pt 0 3pt; color: var(--accent); padding-left: 6pt; border-left: 3.5pt solid var(--accent); break-after: avoid; }
+  p { margin: 0 0 4pt; }
+  table { width: 100%; border-collapse: collapse; margin: 4pt 0 5pt; break-inside: avoid; }
+  th, td { border: 1px solid var(--line); padding: 3pt 6pt; vertical-align: top; text-align: left; line-height: 1.55; }
+  th { background: var(--tint); font-weight: 700; white-space: nowrap; }
+  table.summary th { width: 23mm; }
+  table.cmp th:first-child, table.cmp td:first-child { white-space: nowrap; }
+  table.cmp thead th { text-align: center; }
+  table.cmp td.us { background: #f6f9fc; }
+  ol, ul { margin: 0 0 4pt; padding-left: 16pt; }
+  li { margin: 0 0 2pt; }
+  .fig { margin: 5pt 0 5pt; break-inside: avoid; }
+  .fig svg { width: 100%; height: auto; display: block; }
+  .caption { font-size: 9.5pt; color: var(--muted); text-align: center; margin-top: 2pt; }
+  .note { background: var(--tint); border-radius: 3pt; padding: 4pt 8pt; margin: 4pt 0 5pt; }
+  .label { font-weight: 700; color: var(--accent); }
+  .pagebreak { break-before: page; }
+</style>
+</head>
+<body>
+
+<div class="kicker">2026 AI 활용 아이디어 공모전 · 아이디어 기획 부문</div>
+<h1>창가 눈부심을 AI가 보고 조절하는 편광 창 모듈, PolaGrid</h1>
+<p class="sub">창을 가리지 않고, 눈부심이 생긴 자리의 빛만 줄이는 생활형 AI 서비스</p>
+
+<table class="summary">
+  <tr><th>한 줄 요약</th><td>편광 필름 모듈을 AI가 자리별로 돌려, 창밖은 보이는 채로 눈부심만 줄인다.</td></tr>
+  <tr><th>대상</th><td>창가에서 공부하거나 일하는 사람, 고령자, 학교와 도서관</td></tr>
+  <tr><th>AI 역할</th><td>카메라로 눈부심의 위치와 세기를 판별하고, 사용자 보정 기록으로 선호 밝기를 학습</td></tr>
+  <tr><th>준비 정도</th><td>편광 필름 회전 장치는 2025년 1학기 수업 프로젝트에서 만들어 동작을 확인함. AI 판별, 격자 모듈, 앱이 이번에 새로 더하는 부분</td></tr>
+</table>
+
+<h2>1. 제안 배경</h2>
+<p>해가 드는 오후에 창가에서 공부하거나 일하면 책과 모니터에 빛이 반사되어 글자가 잘 보이지 않는다. 블라인드를 내리면 눈부심은 사라지지만 방이 어두워져 낮에도 조명을 켜게 되고 창밖도 보이지 않는다. 해가 움직이면 다시 올리고 내려야 해서 하루에도 여러 번 반복되고, 창가까지 움직이기 어려운 고령자에게는 더 큰 부담이다.</p>
+<p>조도센서나 예약 시간으로 움직이는 전동 블라인드도 있지만, 방 전체의 밝기만으로는 눈부심을 알 수 없다. 방이 적당히 밝아도 책상 한쪽이나 화면에 빛이 꽂히면 눈이 부시다. 눈부심은 빛의 양이 아니라 어디에 어떻게 비치는지에 따라 생겨서, 지금까지는 사람이 직접 보고 판단해야 했다.</p>
+
+<h2>2. 편광을 쓰는 이유</h2>
+<p>편광 필름 두 장을 겹치고 한 장을 돌리면 통과하는 빛의 양이 각도에 따라 연속으로 달라진다. 창을 가리지 않고도 밝기를 조절할 수 있다는 뜻이다. 여기에 더해, 책상이나 화면에서 반사되어 눈으로 오는 빛은 진동 방향이 한쪽으로 치우쳐 있어서, 창을 지나는 빛의 진동 방향을 바꾸면 같은 밝기에서도 반사되어 오는 양이 달라진다.</p>
+
+<div class="fig">
+<svg viewBox="0 0 680 196" xmlns="http://www.w3.org/2000/svg" font-family="Malgun Gothic, Noto Sans KR, sans-serif" role="img" aria-label="왼쪽은 두 편광 필름의 각도에 따른 투과율, 오른쪽은 빛의 진동 방향에 따라 책상 반사광이 달라지는 원리">
+
+  <text x="0" y="12" font-size="13.5" font-weight="700" fill="#1f3a5f">가. 두 필름이 이루는 각도로 밝기를 고른다</text>
+
+  <rect x="8" y="26" width="76" height="76" fill="#f7d59a" stroke="#1f3a5f" stroke-width="1.3"/>
+  <line x1="20" y1="34" x2="20" y2="94" stroke="#1f3a5f" stroke-width="1.6"/>
+  <line x1="34" y1="34" x2="34" y2="94" stroke="#1f3a5f" stroke-width="1.6"/>
+  <line x1="48" y1="34" x2="48" y2="94" stroke="#1f3a5f" stroke-width="1.6"/>
+  <line x1="62" y1="34" x2="62" y2="94" stroke="#1f3a5f" stroke-width="1.6"/>
+  <text x="46" y="118" text-anchor="middle" font-size="13" font-weight="700" fill="#16202b">0도</text>
+  <text x="46" y="134" text-anchor="middle" font-size="12.5" fill="#5b6673">가장 밝음</text>
+
+  <rect x="116" y="26" width="76" height="76" fill="#dfc9a4" stroke="#1f3a5f" stroke-width="1.3"/>
+  <line x1="126" y1="96" x2="176" y2="36" stroke="#1f3a5f" stroke-width="1.6"/>
+  <line x1="140" y1="96" x2="186" y2="41" stroke="#1f3a5f" stroke-width="1.6"/>
+  <line x1="122" y1="82" x2="166" y2="32" stroke="#1f3a5f" stroke-width="1.6"/>
+  <text x="154" y="118" text-anchor="middle" font-size="13" font-weight="700" fill="#16202b">45도</text>
+  <text x="154" y="134" text-anchor="middle" font-size="12.5" fill="#5b6673">절반쯤</text>
+
+  <rect x="224" y="26" width="76" height="76" fill="#8e9aa6" stroke="#1f3a5f" stroke-width="1.3"/>
+  <line x1="232" y1="38" x2="292" y2="38" stroke="#1f3a5f" stroke-width="1.6"/>
+  <line x1="232" y1="52" x2="292" y2="52" stroke="#1f3a5f" stroke-width="1.6"/>
+  <line x1="232" y1="66" x2="292" y2="66" stroke="#1f3a5f" stroke-width="1.6"/>
+  <line x1="232" y1="80" x2="292" y2="80" stroke="#1f3a5f" stroke-width="1.6"/>
+  <text x="262" y="118" text-anchor="middle" font-size="13" font-weight="700" fill="#16202b">90도</text>
+  <text x="262" y="134" text-anchor="middle" font-size="12.5" fill="#5b6673">거의 막음</text>
+
+  <text x="8" y="160" font-size="12.5" fill="#5b6673">두 필름의 축이 이루는 각도가 커질수록 통과하는 빛이 줄어든다.</text>
+  <text x="8" y="178" font-size="12.5" fill="#5b6673">밝기가 단계가 아니라 연속으로 바뀌므로 필요한 만큼만 어둡게 할 수 있다.</text>
+
+  <line x1="325" y1="4" x2="325" y2="190" stroke="#c9d3de" stroke-width="1"/>
+
+  <text x="345" y="12" font-size="13.5" font-weight="700" fill="#1f3a5f">나. 진동 방향에 따라 반사되는 양이 다르다</text>
+
+  <circle cx="404" cy="40" r="13" fill="#e8a33d"/>
+  <line x1="392" y1="28" x2="386" y2="22" stroke="#e8a33d" stroke-width="2"/>
+  <line x1="416" y1="28" x2="422" y2="22" stroke="#e8a33d" stroke-width="2"/>
+  <text x="404" y="72" text-anchor="middle" font-size="12.5" fill="#5b6673">햇빛</text>
+
+  <rect x="352" y="88" width="104" height="10" fill="#dbe6f0" stroke="#1f3a5f" stroke-width="1.3"/>
+  <text x="404" y="110" text-anchor="middle" font-size="12.5" fill="#16202b">창의 편광 모듈</text>
+  <line x1="418" y1="53" x2="404" y2="86" stroke="#e8a33d" stroke-width="2.4"/>
+
+  <line x1="404" y1="100" x2="382" y2="146" stroke="#d98c1f" stroke-width="2.4"/>
+  <line x1="352" y1="152" x2="468" y2="152" stroke="#16202b" stroke-width="2"/>
+  <text x="410" y="167" text-anchor="middle" font-size="12.5" fill="#5b6673">책상</text>
+  <line x1="382" y1="146" x2="430" y2="120" stroke="#c0521f" stroke-width="3.4"/>
+  <ellipse cx="444" cy="113" rx="11" ry="7" fill="none" stroke="#c0521f" stroke-width="1.6"/>
+  <circle cx="444" cy="113" r="3" fill="#c0521f"/>
+  <text x="404" y="186" text-anchor="middle" font-size="12.5" font-weight="700" fill="#c0521f">반사가 강한 방향, 눈부심</text>
+
+  <rect x="546" y="88" width="104" height="10" fill="#1f3a5f" stroke="#1f3a5f" stroke-width="1.3"/>
+  <text x="598" y="110" text-anchor="middle" font-size="12.5" fill="#16202b">모듈을 돌린 뒤</text>
+  <circle cx="598" cy="40" r="13" fill="#e8a33d"/>
+  <line x1="586" y1="28" x2="580" y2="22" stroke="#e8a33d" stroke-width="2"/>
+  <line x1="610" y1="28" x2="616" y2="22" stroke="#e8a33d" stroke-width="2"/>
+  <line x1="612" y1="53" x2="598" y2="86" stroke="#e8a33d" stroke-width="2.4"/>
+  <line x1="598" y1="100" x2="576" y2="146" stroke="#d98c1f" stroke-width="2.4"/>
+  <line x1="546" y1="152" x2="662" y2="152" stroke="#16202b" stroke-width="2"/>
+  <text x="604" y="167" text-anchor="middle" font-size="12.5" fill="#5b6673">책상</text>
+  <line x1="576" y1="146" x2="624" y2="120" stroke="#8e9aa6" stroke-width="1.6" stroke-dasharray="5 4"/>
+  <ellipse cx="638" cy="113" rx="11" ry="7" fill="none" stroke="#5b6673" stroke-width="1.6"/>
+  <circle cx="638" cy="113" r="3" fill="#5b6673"/>
+  <text x="598" y="186" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1f3a5f">반사가 약한 방향, 편안함</text>
+</svg>
+<div class="caption">그림 1. 편광 필름이 눈부심을 줄이는 두 가지 방식. 밝기 조절(가)과 반사광 억제(나)를 함께 쓴다.</div>
+</div>
+
+<p>가장 나은 각도는 해의 위치, 책상 배치, 보는 사람의 자리에 따라 계속 바뀐다. 미리 만든 규칙표로는 맞추기 어려워서, 카메라로 결과를 보며 각도를 고르는 AI 방식을 택했다.</p>
+
+<div class="pagebreak"></div>
+
+<h2>3. 아이디어</h2>
+<p>PolaGrid는 창 안쪽에 편광 필름 모듈을 격자로 붙이고, 모듈마다 작은 모터로 각도를 바꾼다. 카메라가 책상과 화면 쪽을 보다가 눈부심이 생기면, 그 빛이 들어오는 자리의 모듈만 어둡게 돌린다. 나머지 모듈은 열어 두므로 방은 밝게 유지되고 창밖도 그대로 보인다. 사용자는 앱에서 모드만 고르면 된다.</p>
+
+<div class="fig">
+<svg viewBox="0 0 680 186" xmlns="http://www.w3.org/2000/svg" font-family="Malgun Gothic, Noto Sans KR, sans-serif" role="img" aria-label="왼쪽은 모듈이 모두 열려 책상에 눈부심이 생긴 상태, 오른쪽은 해당 자리의 모듈 두 개만 어두워져 눈부심이 사라지고 방은 밝게 유지된 상태">
+  <text x="0" y="12" font-size="13.5" font-weight="700" fill="#5b6673">지금 상태</text>
+  <rect x="8" y="24" width="300" height="132" fill="#fdfaf3" stroke="#c9d3de" stroke-width="1"/>
+  <rect x="24" y="36" width="104" height="80" fill="#f7d59a" stroke="#1f3a5f" stroke-width="1.4"/>
+  <line x1="50" y1="36" x2="50" y2="116" stroke="#1f3a5f" stroke-width="0.9"/>
+  <line x1="76" y1="36" x2="76" y2="116" stroke="#1f3a5f" stroke-width="0.9"/>
+  <line x1="102" y1="36" x2="102" y2="116" stroke="#1f3a5f" stroke-width="0.9"/>
+  <line x1="24" y1="62" x2="128" y2="62" stroke="#1f3a5f" stroke-width="0.9"/>
+  <line x1="24" y1="89" x2="128" y2="89" stroke="#1f3a5f" stroke-width="0.9"/>
+  <line x1="128" y1="52" x2="214" y2="124" stroke="#e8a33d" stroke-width="3"/>
+  <line x1="128" y1="70" x2="206" y2="126" stroke="#e8a33d" stroke-width="3"/>
+  <rect x="170" y="126" width="126" height="8" fill="#dfe4e9" stroke="#16202b" stroke-width="1.4"/>
+  <ellipse cx="210" cy="126" rx="26" ry="7" fill="#c0521f" fill-opacity="0.55"/>
+  <text x="233" y="150" text-anchor="middle" font-size="12.5" font-weight="700" fill="#c0521f">책상 위 눈부심</text>
+  <text x="76" y="132" text-anchor="middle" font-size="12" fill="#5b6673">모듈 모두 열림</text>
+
+  <text x="372" y="12" font-size="13.5" font-weight="700" fill="#1f3a5f">PolaGrid 작동</text>
+  <rect x="372" y="24" width="300" height="132" fill="#fdfaf3" stroke="#c9d3de" stroke-width="1"/>
+  <rect x="388" y="36" width="104" height="80" fill="#f7d59a" stroke="#1f3a5f" stroke-width="1.4"/>
+  <rect x="466" y="36" width="26" height="26" fill="#1f3a5f"/>
+  <rect x="466" y="62" width="26" height="27" fill="#1f3a5f"/>
+  <line x1="414" y1="36" x2="414" y2="116" stroke="#1f3a5f" stroke-width="0.9"/>
+  <line x1="440" y1="36" x2="440" y2="116" stroke="#1f3a5f" stroke-width="0.9"/>
+  <line x1="466" y1="36" x2="466" y2="116" stroke="#1f3a5f" stroke-width="0.9"/>
+  <line x1="388" y1="62" x2="492" y2="62" stroke="#1f3a5f" stroke-width="0.9"/>
+  <line x1="388" y1="89" x2="492" y2="89" stroke="#1f3a5f" stroke-width="0.9"/>
+  <line x1="492" y1="52" x2="578" y2="124" stroke="#8e9aa6" stroke-width="1.6" stroke-dasharray="5 4"/>
+  <line x1="492" y1="70" x2="570" y2="126" stroke="#8e9aa6" stroke-width="1.6" stroke-dasharray="5 4"/>
+  <rect x="534" y="126" width="126" height="8" fill="#dfe4e9" stroke="#16202b" stroke-width="1.4"/>
+  <text x="597" y="150" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1f3a5f">눈부심 없음, 방은 그대로 밝음</text>
+  <text x="440" y="132" text-anchor="middle" font-size="12" fill="#5b6673">두 칸만 회전</text>
+</svg>
+<div class="caption">그림 2. 창 전체를 가리는 대신 눈부심이 들어오는 칸만 돌린다.</div>
+</div>
+
+<h2>4. AI 활용 방식</h2>
+
+<div class="fig">
+<svg viewBox="0 0 680 128" xmlns="http://www.w3.org/2000/svg" font-family="Malgun Gothic, Noto Sans KR, sans-serif" role="img" aria-label="카메라 관찰, 기기 안 AI 판별, 각도 결정, 모듈 회전으로 이어지고 결과를 다시 관찰하는 순환 구조. 사용자 앱의 보정 기록이 AI 학습에 들어간다.">
+  <defs>
+    <marker id="ah3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1f3a5f"/>
+    </marker>
+    <marker id="ah3g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5b6673"/>
+    </marker>
+  </defs>
+  <path d="M595,28 L595,16 L80,16 L80,26" fill="none" stroke="#5b6673" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah3g)"/>
+  <text x="337" y="11" text-anchor="middle" font-size="12.5" fill="#5b6673">돌린 뒤 결과를 다시 확인해 각도를 다듬는다</text>
+
+  <rect x="10" y="29" width="140" height="50" rx="5" fill="#eef3f8" stroke="#1f3a5f" stroke-width="1.4"/>
+  <text x="80" y="49" text-anchor="middle" font-size="14" font-weight="700" fill="#16202b">카메라·조도센서</text>
+  <text x="80" y="67" text-anchor="middle" font-size="12.5" fill="#5b6673">책상과 화면 관찰</text>
+
+  <rect x="180" y="29" width="140" height="50" rx="5" fill="#1f3a5f" stroke="#1f3a5f" stroke-width="1.4"/>
+  <text x="250" y="49" text-anchor="middle" font-size="14" font-weight="700" fill="#ffffff">기기 안 AI</text>
+  <text x="250" y="67" text-anchor="middle" font-size="12.5" fill="#dfe8f2">눈부심 판별·칸 선택</text>
+
+  <rect x="350" y="29" width="140" height="50" rx="5" fill="#eef3f8" stroke="#1f3a5f" stroke-width="1.4"/>
+  <text x="420" y="49" text-anchor="middle" font-size="14" font-weight="700" fill="#16202b">각도 결정</text>
+  <text x="420" y="67" text-anchor="middle" font-size="12.5" fill="#5b6673">책상 밝기는 유지</text>
+
+  <rect x="520" y="29" width="150" height="50" rx="5" fill="#eef3f8" stroke="#1f3a5f" stroke-width="1.4"/>
+  <text x="595" y="49" text-anchor="middle" font-size="14" font-weight="700" fill="#16202b">편광 모듈 격자</text>
+  <text x="595" y="67" text-anchor="middle" font-size="12.5" fill="#5b6673">해당 칸만 회전</text>
+
+  <line x1="150" y1="54" x2="178" y2="54" stroke="#1f3a5f" stroke-width="1.6" marker-end="url(#ah3)"/>
+  <line x1="320" y1="54" x2="348" y2="54" stroke="#1f3a5f" stroke-width="1.6" marker-end="url(#ah3)"/>
+  <line x1="490" y1="54" x2="518" y2="54" stroke="#1f3a5f" stroke-width="1.6" marker-end="url(#ah3)"/>
+
+  <rect x="180" y="98" width="140" height="28" rx="5" fill="#ffffff" stroke="#1f3a5f" stroke-width="1.4"/>
+  <text x="250" y="117" text-anchor="middle" font-size="13.5" font-weight="700" fill="#16202b">사용자 앱</text>
+  <line x1="250" y1="98" x2="250" y2="81" stroke="#1f3a5f" stroke-width="1.6" marker-end="url(#ah3)"/>
+  <text x="330" y="115" font-size="12.5" fill="#5b6673">모드 선택과 밝기 보정 기록이 다음 판단에 들어간다</text>
+</svg>
+<div class="caption">그림 3. 관찰에서 회전까지, 그리고 결과를 다시 보는 순환</div>
+</div>
+
+<table>
+  <tr><th>눈부심 판별</th><td>카메라 영상에서 눈부심의 유무, 세기, 위치를 판별한다. 밝기 특징값으로 학습한 경량 분류 모델(scikit-learn)과 MobileNetV2 전이학습 모델의 정확도와 속도를 비교해 기기에서 쓸 모델을 고른다.</td></tr>
+  <tr><th>칸 선택</th><td>모듈을 하나씩 돌려 볼 때 눈부심이 어떻게 변하는지 기록해, 어떤 칸이 어느 자리에 빛을 보내는지 학습한다.</td></tr>
+  <tr><th>각도 결정</th><td>눈부심은 줄이면서 책상 밝기는 목표 범위 안에 두는 각도를 칸마다 고른다.</td></tr>
+  <tr><th>개인화</th><td>앱에서 조금 더 밝게, 조금 더 어둡게로 고친 기록을 시간대와 바깥 밝기별로 쌓아 다음 판단에 반영한다.</td></tr>
+</table>
+<div class="note"><span class="label">사생활 보호.</span> 영상은 기기 안에서만 처리하고 저장하거나 외부로 보내지 않는다. 얼굴 없이 저해상도 밝기 정보만 쓰며, 카메라는 책상과 창 방향으로 고정한다. 카메라를 원치 않는 집에서는 책상 위 조도센서 여러 개만으로 판단하는 모드를 쓸 수 있다. 정확도는 떨어지지만 영상을 전혀 쓰지 않는다.</div>
+
+<div class="pagebreak"></div>
+
+<h2>5. 사용 장면</h2>
+<p>오후 3시, 창가에서 공부하는 학생의 노트에 햇빛이 반사된다. 카메라가 눈부심을 감지하면 창 오른쪽 위 칸 두세 개가 돌아가 그 자리로 오는 빛만 줄이고, 방 조명은 켜지 않아도 된다. 구름이 끼면 칸이 다시 열린다. 학생이 앱에서 조금 더 어둡게를 누르면 다음 날 같은 시간에는 처음부터 그 밝기로 맞춘다. 거실에서 TV를 보는 어르신은 모드를 한 번 켜 두면 해가 움직이는 동안 칸이 알아서 따라간다.</p>
+
+<h2>6. 기존 방식과 비교</h2>
+
+<div class="fig">
+<svg viewBox="0 0 680 120" xmlns="http://www.w3.org/2000/svg" font-family="Malgun Gothic, Noto Sans KR, sans-serif" role="img" aria-label="수동 블라인드와 전동 블라인드는 창 전체를 가려 방이 어두워지고 창밖이 보이지 않는다. PolaGrid는 일부 칸만 어둡게 하여 방이 밝고 창밖이 보인다.">
+  <rect x="26" y="20" width="150" height="62" fill="#9aa5b1" stroke="#1f3a5f" stroke-width="1.4"/>
+  <line x1="26" y1="30" x2="176" y2="30" stroke="#ffffff" stroke-width="1.2"/>
+  <line x1="26" y1="41" x2="176" y2="41" stroke="#ffffff" stroke-width="1.2"/>
+  <line x1="26" y1="52" x2="176" y2="52" stroke="#ffffff" stroke-width="1.2"/>
+  <line x1="26" y1="63" x2="176" y2="63" stroke="#ffffff" stroke-width="1.2"/>
+  <line x1="26" y1="74" x2="176" y2="74" stroke="#ffffff" stroke-width="1.2"/>
+  <text x="101" y="99" text-anchor="middle" font-size="13.5" font-weight="700" fill="#16202b">수동 블라인드</text>
+  <text x="101" y="115" text-anchor="middle" font-size="12.5" fill="#5b6673">사람이 그때그때 조작</text>
+
+  <rect x="265" y="20" width="150" height="62" fill="#9aa5b1" stroke="#1f3a5f" stroke-width="1.4"/>
+  <line x1="265" y1="30" x2="415" y2="30" stroke="#ffffff" stroke-width="1.2"/>
+  <line x1="265" y1="41" x2="415" y2="41" stroke="#ffffff" stroke-width="1.2"/>
+  <line x1="265" y1="52" x2="415" y2="52" stroke="#ffffff" stroke-width="1.2"/>
+  <line x1="265" y1="63" x2="415" y2="63" stroke="#ffffff" stroke-width="1.2"/>
+  <line x1="265" y1="74" x2="415" y2="74" stroke="#ffffff" stroke-width="1.2"/>
+  <text x="340" y="99" text-anchor="middle" font-size="13.5" font-weight="700" fill="#16202b">전동 블라인드</text>
+  <text x="340" y="115" text-anchor="middle" font-size="12.5" fill="#5b6673">방 밝기나 예약 시간으로 전체를 가림</text>
+
+  <rect x="504" y="20" width="150" height="62" fill="#f7d59a" stroke="#1f3a5f" stroke-width="1.4"/>
+  <rect x="604" y="20" width="50" height="31" fill="#1f3a5f"/>
+  <line x1="554" y1="20" x2="554" y2="82" stroke="#1f3a5f" stroke-width="0.9"/>
+  <line x1="604" y1="20" x2="604" y2="82" stroke="#1f3a5f" stroke-width="0.9"/>
+  <line x1="504" y1="51" x2="654" y2="51" stroke="#1f3a5f" stroke-width="0.9"/>
+  <text x="579" y="99" text-anchor="middle" font-size="13.5" font-weight="700" fill="#1f3a5f">PolaGrid</text>
+  <text x="579" y="115" text-anchor="middle" font-size="12.5" fill="#5b6673">눈부신 칸만 어둡게, 창밖은 보임</text>
+</svg>
+<div class="caption">그림 4. 같은 창에서 세 방식이 만드는 결과 차이</div>
+</div>
+
+<p>블라인드는 사람이 매번 다시 맞춰야 하고 전동 제품도 설정값이 고정되어 있다. PolaGrid는 사용자가 고친 기록을 쌓아 다음 판단에 반영한다는 점이 다르다.</p>
+
+<h2>7. 실현 가능성과 개발 계획</h2>
+
+<div class="fig">
+<svg viewBox="0 0 680 84" xmlns="http://www.w3.org/2000/svg" font-family="Malgun Gothic, Noto Sans KR, sans-serif" role="img" aria-label="1단계 회전 장치는 2025년에 만들어 동작을 확인했고, 2단계 판별 모델 학습, 3단계 제어와 앱, 4단계 사용 전후 측정이 남아 있다.">
+  <line x1="14" y1="30" x2="666" y2="30" stroke="#c9d3de" stroke-width="2"/>
+  <circle cx="90" cy="30" r="9" fill="#1f3a5f"/>
+  <path d="M85,30 L89,34 L96,26" fill="none" stroke="#ffffff" stroke-width="2"/>
+  <text x="90" y="16" text-anchor="middle" font-size="12" font-weight="700" fill="#1f3a5f">2025년 완료</text>
+  <text x="90" y="52" text-anchor="middle" font-size="13" font-weight="700" fill="#16202b">1. 회전 장치</text>
+  <text x="90" y="68" text-anchor="middle" font-size="12.5" fill="#5b6673">조도센서·서보·필름</text>
+
+  <circle cx="282" cy="30" r="8" fill="#ffffff" stroke="#1f3a5f" stroke-width="2"/>
+  <text x="282" y="52" text-anchor="middle" font-size="13" font-weight="700" fill="#16202b">2. 판별 모델</text>
+  <text x="282" y="68" text-anchor="middle" font-size="12.5" fill="#5b6673">시간대별 영상 수집·학습</text>
+
+  <circle cx="450" cy="30" r="8" fill="#ffffff" stroke="#1f3a5f" stroke-width="2"/>
+  <text x="450" y="52" text-anchor="middle" font-size="13" font-weight="700" fill="#16202b">3. 제어와 앱</text>
+  <text x="450" y="68" text-anchor="middle" font-size="12.5" fill="#5b6673">칸 선택·각도·모드 화면</text>
+
+  <circle cx="606" cy="30" r="8" fill="#ffffff" stroke="#1f3a5f" stroke-width="2"/>
+  <text x="606" y="52" text-anchor="middle" font-size="13" font-weight="700" fill="#16202b">4. 효과 측정</text>
+  <text x="606" y="68" text-anchor="middle" font-size="12.5" fill="#5b6673">밝기·눈부심 면적·조명 시간</text>
+</svg>
+<div class="caption">그림 5. 이미 만든 부분과 이번에 더하는 부분</div>
+</div>
+
+<p>1단계 장치는 2025년 1학기 창의SW기초설계 수업에서 조도센서, 서보모터, 편광 필름으로 만들어 동작을 확인했다. 당시에는 규칙 기반이었고, 이번 기획은 그 장치를 여러 칸으로 나누고 카메라와 AI, 앱을 더하는 작업이라 기구부를 새로 만들 필요가 없다.</p>
+
+<h2>8. 활용 범위와 기대 효과</h2>
+<p>가정에서는 공부방 책상이나 거실 TV 앞에 쓰고, 칸 단위라 창 크기에 맞춰 개수만 조정하면 된다. 학교와 도서관은 자리마다 눈부심 사정이 달라 자리별 조절이 잘 맞고, 복지시설에서는 어르신이 블라인드를 직접 만지지 않아도 된다. 공공건물 창호 개선 사업에 채광 자동 조절을 넣는 방안도 제안한다.</p>
+<ul>
+  <li>블라인드를 여닫는 일이 줄고, 창을 가리지 않으므로 낮에 조명을 켜는 시간도 줄어들 것으로 예상한다. 실제 감소량은 4단계 측정값으로 확인한다.</li>
+  <li>블라인드 조작이 어려운 고령자와 거동이 불편한 사람도 도움 없이 창가 밝기를 맞출 수 있다.</li>
+</ul>
+<p>다만 편광 필름은 빛을 일부 흡수해서 칸을 가장 밝게 열어도 맨 유리창보다는 어둡다. 그래서 칸은 눈부심이 자주 생기는 구역에만 붙이고 나머지 창은 그대로 둔다. 각도로 반사 눈부심이 얼마나 줄어드는지도 4단계 실험으로 확인해야 한다.</p>
+
+</body>
+</html>
