@@ -96,8 +96,8 @@
   <text x="262" y="118" text-anchor="middle" font-size="13" font-weight="700" fill="#16202b">90도</text>
   <text x="262" y="134" text-anchor="middle" font-size="12.5" fill="#5b6673">거의 막음</text>
 
-  <text x="8" y="160" font-size="12.5" fill="#5b6673">두 필름의 축이 이루는 각도가 커질수록 통과하는 빛이 줄어든다.</text>
-  <text x="8" y="178" font-size="12.5" fill="#5b6673">밝기가 단계가 아니라 연속으로 바뀌므로 필요한 만큼만 어둡게 할 수 있다.</text>
+  <text x="8" y="160" font-size="12.5" fill="#5b6673">각도가 커질수록 통과하는 빛이 줄어든다.</text>
+  <text x="8" y="178" font-size="12.5" fill="#5b6673">단계가 아니라 연속으로 바뀐다.</text>
 
   <line x1="325" y1="4" x2="325" y2="190" stroke="#c9d3de" stroke-width="1"/>
 
@@ -115,9 +115,9 @@
   <line x1="404" y1="100" x2="382" y2="146" stroke="#d98c1f" stroke-width="2.4"/>
   <line x1="352" y1="152" x2="468" y2="152" stroke="#16202b" stroke-width="2"/>
   <text x="410" y="167" text-anchor="middle" font-size="12.5" fill="#5b6673">책상</text>
-  <line x1="382" y1="146" x2="430" y2="120" stroke="#c0521f" stroke-width="3.4"/>
-  <ellipse cx="444" cy="113" rx="11" ry="7" fill="none" stroke="#c0521f" stroke-width="1.6"/>
-  <circle cx="444" cy="113" r="3" fill="#c0521f"/>
+  <line x1="382" y1="146" x2="440" y2="130" stroke="#c0521f" stroke-width="3.4"/>
+  <ellipse cx="456" cy="126" rx="11" ry="7" fill="none" stroke="#c0521f" stroke-width="1.6"/>
+  <circle cx="456" cy="126" r="3" fill="#c0521f"/>
   <text x="404" y="186" text-anchor="middle" font-size="12.5" font-weight="700" fill="#c0521f">반사가 강한 방향, 눈부심</text>
 
   <rect x="546" y="88" width="104" height="10" fill="#1f3a5f" stroke="#1f3a5f" stroke-width="1.3"/>
@@ -129,9 +129,9 @@
   <line x1="598" y1="100" x2="576" y2="146" stroke="#d98c1f" stroke-width="2.4"/>
   <line x1="546" y1="152" x2="662" y2="152" stroke="#16202b" stroke-width="2"/>
   <text x="604" y="167" text-anchor="middle" font-size="12.5" fill="#5b6673">책상</text>
-  <line x1="576" y1="146" x2="624" y2="120" stroke="#8e9aa6" stroke-width="1.6" stroke-dasharray="5 4"/>
-  <ellipse cx="638" cy="113" rx="11" ry="7" fill="none" stroke="#5b6673" stroke-width="1.6"/>
-  <circle cx="638" cy="113" r="3" fill="#5b6673"/>
+  <line x1="576" y1="146" x2="634" y2="130" stroke="#8e9aa6" stroke-width="1.6" stroke-dasharray="5 4"/>
+  <ellipse cx="650" cy="126" rx="11" ry="7" fill="none" stroke="#5b6673" stroke-width="1.6"/>
+  <circle cx="650" cy="126" r="3" fill="#5b6673"/>
   <text x="598" y="186" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1f3a5f">반사가 약한 방향, 편안함</text>
 </svg>
 <div class="caption">그림 1. 편광 필름이 눈부심을 줄이는 두 가지 방식. 밝기 조절(가)과 반사광 억제(나)를 함께 쓴다.</div>
@@ -142,7 +142,7 @@
 <div class="pagebreak"></div>
 
 <h2>3. 아이디어</h2>
-<p>PolaGrid는 창 안쪽에 편광 필름 모듈을 격자로 붙이고, 모듈마다 작은 모터로 각도를 바꾼다. 카메라가 책상과 화면 쪽을 보다가 눈부심이 생기면, 그 빛이 들어오는 자리의 모듈만 어둡게 돌린다. 나머지 모듈은 열어 두므로 방은 밝게 유지되고 창밖도 그대로 보인다. 사용자는 앱에서 모드만 고르면 된다.</p>
+<p>PolaGrid는 창 안쪽에 편광 필름 모듈을 격자로 붙이고 모듈마다 작은 모터로 각도를 바꾼다. 카메라가 책상 쪽을 보다가 눈부심이 생기면 그 빛이 들어오는 자리의 모듈만 어둡게 돌리고, 나머지는 열어 두므로 방은 밝게 유지된다.</p>
 
 <div class="fig">
 <svg viewBox="0 0 680 186" xmlns="http://www.w3.org/2000/svg" font-family="Malgun Gothic, Noto Sans KR, sans-serif" role="img" aria-label="왼쪽은 모듈이 모두 열려 책상에 눈부심이 생긴 상태, 오른쪽은 해당 자리의 모듈 두 개만 어두워져 눈부심이 사라지고 방은 밝게 유지된 상태">
@@ -180,48 +180,61 @@
 <div class="caption">그림 2. 창 전체를 가리는 대신 눈부심이 들어오는 칸만 돌린다.</div>
 </div>
 
-<h2>4. AI 활용 방식</h2>
-
 <div class="fig">
-<svg viewBox="0 0 680 128" xmlns="http://www.w3.org/2000/svg" font-family="Malgun Gothic, Noto Sans KR, sans-serif" role="img" aria-label="카메라 관찰, 기기 안 AI 판별, 각도 결정, 모듈 회전으로 이어지고 결과를 다시 관찰하는 순환 구조. 사용자 앱의 보정 기록이 AI 학습에 들어간다.">
-  <defs>
-    <marker id="ah3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 z" fill="#1f3a5f"/>
-    </marker>
-    <marker id="ah3g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 z" fill="#5b6673"/>
-    </marker>
-  </defs>
-  <path d="M595,28 L595,16 L80,16 L80,26" fill="none" stroke="#5b6673" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah3g)"/>
-  <text x="337" y="11" text-anchor="middle" font-size="12.5" fill="#5b6673">돌린 뒤 결과를 다시 확인해 각도를 다듬는다</text>
+<svg viewBox="0 0 680 166" xmlns="http://www.w3.org/2000/svg" font-family="Malgun Gothic, Noto Sans KR, sans-serif" role="img" aria-label="왼쪽은 고정 편광판, 회전 편광판, 서보 기어, 프레임이 쌓인 모듈 한 칸의 구조. 가운데는 창유리 안쪽에 프레임을 붙이는 방식. 오른쪽은 세 가지 모드를 고르는 앱 화면.">
 
-  <rect x="10" y="29" width="140" height="50" rx="5" fill="#eef3f8" stroke="#1f3a5f" stroke-width="1.4"/>
-  <text x="80" y="49" text-anchor="middle" font-size="14" font-weight="700" fill="#16202b">카메라·조도센서</text>
-  <text x="80" y="67" text-anchor="middle" font-size="12.5" fill="#5b6673">책상과 화면 관찰</text>
+  <text x="0" y="11" font-size="13" font-weight="700" fill="#1f3a5f">가. 모듈 한 칸의 구조</text>
+  <rect x="8" y="24" width="196" height="22" fill="#dce6f0" stroke="#1f3a5f" stroke-width="1.3"/>
+  <text x="18" y="39" font-size="12" fill="#16202b">고정 편광판</text>
+  <rect x="8" y="52" width="196" height="22" fill="#f7d59a" stroke="#1f3a5f" stroke-width="1.3"/>
+  <text x="18" y="67" font-size="12" fill="#16202b">회전 편광판</text>
+  <path d="M176,56 a10,10 0 1,1 -7,17" fill="none" stroke="#1f3a5f" stroke-width="1.6"/>
+  <polygon points="166,69 175,74 168,79" fill="#1f3a5f"/>
+  <rect x="8" y="80" width="196" height="22" fill="#edeff2" stroke="#1f3a5f" stroke-width="1.3"/>
+  <text x="18" y="95" font-size="12" fill="#16202b">서보 기어</text>
+  <circle cx="180" cy="91" r="7.5" fill="none" stroke="#1f3a5f" stroke-width="1.4"/>
+  <circle cx="180" cy="91" r="2.5" fill="#1f3a5f"/>
+  <rect x="8" y="108" width="196" height="22" fill="none" stroke="#1f3a5f" stroke-width="1.3" stroke-dasharray="5 4"/>
+  <text x="18" y="123" font-size="12" fill="#5b6673">프레임</text>
+  <text x="0" y="152" font-size="11.5" fill="#5b6673">칸마다 서보 하나가 각도를 맡는다.</text>
 
-  <rect x="180" y="29" width="140" height="50" rx="5" fill="#1f3a5f" stroke="#1f3a5f" stroke-width="1.4"/>
-  <text x="250" y="49" text-anchor="middle" font-size="14" font-weight="700" fill="#ffffff">기기 안 AI</text>
-  <text x="250" y="67" text-anchor="middle" font-size="12.5" fill="#dfe8f2">눈부심 판별·칸 선택</text>
+  <line x1="262" y1="4" x2="262" y2="162" stroke="#c9d3de" stroke-width="1"/>
 
-  <rect x="350" y="29" width="140" height="50" rx="5" fill="#eef3f8" stroke="#1f3a5f" stroke-width="1.4"/>
-  <text x="420" y="49" text-anchor="middle" font-size="14" font-weight="700" fill="#16202b">각도 결정</text>
-  <text x="420" y="67" text-anchor="middle" font-size="12.5" fill="#5b6673">책상 밝기는 유지</text>
+  <text x="275" y="11" font-size="13" font-weight="700" fill="#1f3a5f">나. 창에 붙이는 방식</text>
+  <text x="275" y="40" font-size="11.5" fill="#5b6673">창유리</text>
+  <rect x="285" y="46" width="150" height="10" fill="#eaf2f8" stroke="#1f3a5f" stroke-width="1.2"/>
+  <rect x="299" y="56" width="8" height="6" fill="#1f3a5f"/>
+  <rect x="359" y="56" width="8" height="6" fill="#1f3a5f"/>
+  <rect x="289" y="62" width="46" height="28" fill="#f7d59a" stroke="#1f3a5f" stroke-width="1.3"/>
+  <rect x="349" y="62" width="46" height="28" fill="#1f3a5f" stroke="#1f3a5f" stroke-width="1.3"/>
+  <line x1="412" y1="64" x2="412" y2="84" stroke="#5b6673" stroke-width="1.2"/>
+  <polygon points="408,82 416,82 412,90" fill="#5b6673"/>
+  <text x="420" y="78" font-size="11.5" fill="#5b6673">실내</text>
+  <text x="275" y="116" font-size="11.5" fill="#5b6673">창 안쪽에 프레임만 붙이고 유리는</text>
+  <text x="275" y="134" font-size="11.5" fill="#5b6673">그대로 둔다. 창 크기에 맞춰</text>
+  <text x="275" y="152" font-size="11.5" fill="#5b6673">칸 수만 조정한다.</text>
 
-  <rect x="520" y="29" width="150" height="50" rx="5" fill="#eef3f8" stroke="#1f3a5f" stroke-width="1.4"/>
-  <text x="595" y="49" text-anchor="middle" font-size="14" font-weight="700" fill="#16202b">편광 모듈 격자</text>
-  <text x="595" y="67" text-anchor="middle" font-size="12.5" fill="#5b6673">해당 칸만 회전</text>
+  <line x1="457" y1="4" x2="457" y2="162" stroke="#c9d3de" stroke-width="1"/>
 
-  <line x1="150" y1="54" x2="178" y2="54" stroke="#1f3a5f" stroke-width="1.6" marker-end="url(#ah3)"/>
-  <line x1="320" y1="54" x2="348" y2="54" stroke="#1f3a5f" stroke-width="1.6" marker-end="url(#ah3)"/>
-  <line x1="490" y1="54" x2="518" y2="54" stroke="#1f3a5f" stroke-width="1.6" marker-end="url(#ah3)"/>
-
-  <rect x="180" y="98" width="140" height="28" rx="5" fill="#ffffff" stroke="#1f3a5f" stroke-width="1.4"/>
-  <text x="250" y="117" text-anchor="middle" font-size="13.5" font-weight="700" fill="#16202b">사용자 앱</text>
-  <line x1="250" y1="98" x2="250" y2="81" stroke="#1f3a5f" stroke-width="1.6" marker-end="url(#ah3)"/>
-  <text x="330" y="115" font-size="12.5" fill="#5b6673">모드 선택과 밝기 보정 기록이 다음 판단에 들어간다</text>
+  <text x="470" y="11" font-size="13" font-weight="700" fill="#1f3a5f">다. 앱에서 고르는 것</text>
+  <rect x="486" y="22" width="128" height="118" rx="13" fill="#ffffff" stroke="#1f3a5f" stroke-width="2"/>
+  <rect x="494" y="30" width="112" height="102" fill="#f7f9fb"/>
+  <text x="500" y="43" font-size="11" font-weight="700" fill="#1f3a5f">PolaGrid</text>
+  <rect x="500" y="49" width="100" height="21" rx="4" fill="#1f3a5f"/>
+  <text x="550" y="63" text-anchor="middle" font-size="10.5" fill="#ffffff">책상 눈부심</text>
+  <rect x="500" y="73" width="100" height="21" rx="4" fill="#ffffff" stroke="#c9d3de" stroke-width="1.2"/>
+  <text x="550" y="87" text-anchor="middle" font-size="10.5" fill="#16202b">화면 반사</text>
+  <rect x="500" y="97" width="100" height="21" rx="4" fill="#ffffff" stroke="#c9d3de" stroke-width="1.2"/>
+  <text x="550" y="111" text-anchor="middle" font-size="10.5" fill="#16202b">최대한 밝게</text>
+  <line x1="500" y1="127" x2="600" y2="127" stroke="#c9d3de" stroke-width="3"/>
+  <circle cx="572" cy="127" r="5.5" fill="#1f3a5f"/>
+  <text x="470" y="158" font-size="11.5" fill="#5b6673">모드만 고르면 나머지는 자동</text>
 </svg>
-<div class="caption">그림 3. 관찰에서 회전까지, 그리고 결과를 다시 보는 순환</div>
+<div class="caption">그림 3. 제품 구성. 칸 하나의 구조와 설치 방식, 그리고 앱 화면.</div>
 </div>
+
+<h2>4. AI 활용 방식</h2>
+<p>AI는 눈부심을 판별해 돌릴 칸과 각도를 정하고, 돌린 뒤 결과를 다시 보며 다듬는다.</p>
 
 <table>
   <tr><th>눈부심 판별</th><td>카메라 영상에서 눈부심의 유무, 세기, 위치를 판별한다. 밝기 특징값으로 학습한 경량 분류 모델(scikit-learn)과 MobileNetV2 전이학습 모델의 정확도와 속도를 비교해 기기에서 쓸 모델을 고른다.</td></tr>
