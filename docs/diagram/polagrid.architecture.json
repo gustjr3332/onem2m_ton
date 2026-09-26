@@ -2,32 +2,32 @@
   "schema_version": 1,
   "diagram_type": "architecture",
   "meta": {
-    "title": "PolaGrid 아키텍처 (B안)",
-    "subtitle": "편광판 채광 · 눈부심 제어 · oneM2M + ETSI MEC",
-    "locale": "en",
+    "title": "PolaGrid 동작 구조",
     "quality_profile": "showcase"
   },
   "components": [
-    { "id": "sensor-node", "type": "external", "label": "Light + Camera Node", "sublabel": "Arduino · 조도센서 + 카메라", "pos": [40, 240], "size": [170, 64] },
-    { "id": "edge-ae", "type": "backend", "label": "Edge ADN-AE", "sublabel": "Python gateway", "pos": [310, 240], "size": [150, 64] },
-    { "id": "mn-cse", "type": "messagebus", "label": "MN-CSE", "sublabel": "ACME-oneM2M-CSE · /polagrid/site", "pos": [550, 240], "size": [170, 64] },
-    { "id": "mec-app", "type": "backend", "label": "Glare Inference", "sublabel": "MEC app: CV glare model", "pos": [820, 240], "size": [170, 64] },
-    { "id": "mec-platform", "type": "cloud", "label": "MEC Platform", "sublabel": "Mp1 registry", "pos": [820, 80], "size": [170, 64] },
-    { "id": "actuator", "type": "frontend", "label": "Servo Actuator", "sublabel": "편광판 회전", "pos": [1080, 240], "size": [160, 64] }
+    { "id": "camera", "type": "external", "label": "카메라 · 조도센서", "sublabel": "책상과 화면 쪽 관찰", "tag": "저해상도 밝기 정보", "pos": [60, 120], "size": [180, 64] },
+    { "id": "ai", "type": "backend", "label": "기기 안 AI", "sublabel": "눈부심 판별 · 칸 선택", "pos": [330, 120], "size": [170, 64] },
+    { "id": "angle", "type": "backend", "label": "각도 결정", "sublabel": "책상 밝기는 목표 범위 유지", "pos": [590, 120], "size": [180, 64] },
+    { "id": "modules", "type": "frontend", "label": "편광 모듈 격자", "sublabel": "칸마다 서보로 회전", "pos": [860, 120], "size": [180, 64] },
+    { "id": "app", "type": "frontend", "label": "사용자 앱", "sublabel": "모드 선택 · 밝기 보정", "pos": [330, 310], "size": [170, 64] },
+    { "id": "pref", "type": "database", "label": "선호 기록", "sublabel": "시간대 · 바깥 밝기별 보정 이력", "pos": [590, 310], "size": [180, 64] }
   ],
   "boundaries": [
-    { "kind": "region", "label": "실내 설치 현장 (재사용 하드웨어)", "wraps": ["sensor-node", "edge-ae", "mn-cse"] },
-    { "kind": "region", "label": "MEC host (신규)", "wraps": ["mec-app", "mec-platform"] }
+    { "kind": "region", "label": "창가 기기 안에서만 처리 (영상 저장 · 전송 없음)", "wraps": ["camera", "ai", "angle", "modules", "pref"] }
   ],
   "connections": [
-    { "id": "uart", "from": "sensor-node", "to": "edge-ae", "label": "UART", "variant": "emphasis" },
-    { "id": "post-cin", "from": "edge-ae", "to": "mn-cse", "label": "POST CIN", "variant": "emphasis" },
-    { "id": "notify", "from": "mn-cse", "to": "mec-app", "label": "SUB notify", "variant": "emphasis" },
-    { "id": "register", "from": "mec-app", "to": "mec-platform", "label": "Mp1 register", "variant": "security", "fromSide": "top", "toSide": "bottom" },
-    { "id": "rotate", "from": "mec-app", "to": "actuator", "label": "회전각 명령", "variant": "emphasis" }
+    { "id": "observe", "from": "camera", "to": "ai", "label": "밝기 분포", "variant": "emphasis" },
+    { "id": "pick", "from": "ai", "to": "angle", "label": "어느 칸을 돌릴지", "variant": "emphasis" },
+    { "id": "rotate", "from": "angle", "to": "modules", "label": "회전각", "variant": "emphasis" },
+    { "id": "recheck", "from": "modules", "to": "camera", "label": "돌린 뒤 결과를 다시 확인", "variant": "dashed", "fromSide": "top", "toSide": "top" },
+    { "id": "mode", "from": "app", "to": "ai", "label": "모드 선택", "fromSide": "top", "toSide": "bottom" },
+    { "id": "record", "from": "app", "to": "pref", "label": "보정 기록" },
+    { "id": "learn", "from": "pref", "to": "ai", "label": "선호 반영", "variant": "dashed", "fromSide": "top", "toSide": "bottom" }
   ],
   "cards": [
-    { "dot": "cyan", "title": "재사용 요소", "items": ["조도센서 + 서보모터 + 편광필름 (2025-1 검증 완료)"] },
-    { "dot": "amber", "title": "신규 요소", "items": ["카메라 기반 눈부심 감지 CV 모델", "MEC Mp1에 polagrid-daylight 서비스 등록"] }
+    { "dot": "cyan", "title": "AI가 하는 일", "items": ["눈부심의 유무 · 세기 · 위치를 판별", "어떤 칸이 어느 자리에 빛을 보내는지 학습", "보정 기록으로 선호 밝기를 학습"] },
+    { "dot": "emerald", "title": "사생활 보호", "items": ["영상은 기기 안에서만 처리하고 저장하지 않음", "얼굴 없이 저해상도 밝기 정보만 사용", "카메라 없이 조도센서만 쓰는 모드 제공"] },
+    { "dot": "amber", "title": "이미 만든 부분", "items": ["조도센서 + 서보모터 + 편광필름 회전 장치", "2025년 1학기 수업 프로젝트에서 동작 확인"] }
   ]
 }
