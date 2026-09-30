@@ -92,6 +92,50 @@
 2. `python tools/scale_smoke.py --n 10` 으로 동작 확인 → `--n 100 / 1000` 순서로 증가 (스크립트는 미검증, 기본 포트·originator는 ACME 기본값 가정)
 3. 결과(p50/p95, req/s, ACME 메모리)를 이 문서 하단에 붙여 ACME vs tinyIoT 판정
 
+## 측정 결과 1차 (2026-09-29, 로컬 PC 8코어·8GB, ACME 2026.05.1 Docker 단일 컨테이너)
+
+`tools/scale_smoke.py` (AE 등록 → CNT → CIN, 요청 3건/칸). 세 번을 같은 CSE에 연속 실행해 리소스가 누적된 상태.
+
+| N | 동시 워커 | 성공 | 소요 | 처리량 | CIN p50 / p95 |
+|---|---|---|---|---|---|
+| 10 | 5 | 10/10 | 0.2s | 175 req/s | 27 / 41 ms |
+| 100 | 10 | 100/100 | 2.2s | 137 req/s | 87 / 122 ms |
+| 1,000 | 20 | 1000/1000 | 84.3s | **36 req/s** | 629 / 1,344 ms |
+
+측정 직후 ACME 메모리는 112MiB였다. 메모리가 아니라 처리 속도가 병목이다.
+
+`tools/locustfile.py` 동작 확인: 칸 50개, 조도 5초 주기, 45초 실행. 실패 0건, 약 13 req/s, 조도 CIN p50 72ms / p95 1.9s (AE 1,160개가 이미 쌓인 CSE에서 측정).
+
+해석:
+- **AE가 1,000개 수준으로 쌓이면 ACME 처리량이 약 1/5로 떨어진다.** 1만 칸의 조도를 60초마다 보고하면 약 167 req/s가 필요하므로, 이 구성(칸당 AE, 기본 설정 ACME)으로는 부족하다. 원인이 저장소 설정(기본 DB, 로그 수준)인지 칸당 AE 구조인지는 아직 구분하지 못했다.
+- 다음 비교 대상: (1) ACME 로그 수준·저장소 설정 조정, (2) zone당 AE + 칸당 container 구조, (3) tinyIoT/Mobius에 같은 스크립트.
+- 한계: 클라이언트와 CSE가 같은 PC에 있다. 매 실행 전 CSE를 초기화하지 않았다.
+
+## 측정 결과 2차: 설정 × 저장 구조 비교 (2026-09-29)
+
+`sh tools/bench_acme.sh 1000 3000`. 조합마다 새 컨테이너(빈 DB)에서 칸 1,000개를 설치한 뒤 CIN 3,000건을 씀. 동시 워커 20, 조합당 1회 측정. 원본: `results/bench_acme_*.txt`
+
+| 설정 | 구조 | 설치 처리량 | 운영 처리량 | 운영 CIN p50 / p95 |
+|---|---|---|---|---|
+| 기본 (tinydb, 로그 info) | 칸당 AE | 40 req/s | 10 req/s | 1,757 / 4,139 ms |
+| 기본 | zone당 AE | 15 req/s | 7 req/s | 2,411 / 5,005 ms |
+| 로그 off | 칸당 AE | 25 req/s | 12 req/s | 1,460 / 2,993 ms |
+| 로그 off | zone당 AE | 14 req/s | 8 req/s | 2,464 / 4,464 ms |
+| **메모리 DB + 로그 off** | 칸당 AE | **91 req/s** | **78 req/s** | **244 / 372 ms** |
+| 메모리 DB + 로그 off | zone당 AE | 90 req/s | 72 req/s | 265 / 417 ms |
+
+해석:
+1. **병목은 저장소(tinydb 파일 DB)다.** 메모리 DB로 바꾸면 운영 처리량이 약 8배(10 → 78 req/s)가 된다. tinydb는 리소스 전체를 JSON 파일 하나(측정 중 약 3MB)에 담고 계속 다시 쓴다.
+2. **로그 끄기는 효과가 없다.** 차이가 측정 오차 수준이다(1회 측정이라 ±30% 정도는 흔들린다고 본다).
+3. **zone당 AE 구조는 성능 이득이 없다.** tinydb에서는 오히려 느렸고, 메모리 DB에서는 차이가 없다. AE 개수가 아니라 전체 리소스 개수가 비용을 정한다. → 구조는 성능이 아니라 **관리 관점**(권한, 일괄 제어, 등록 절차)으로 고른다.
+4. 부하 중 ACME CPU는 약 100%(코어 1개)로 고정됐다. 파이썬 단일 프로세스 한계라서 메모리 DB에서도 78 req/s가 천장이다.
+5. 필요량과 비교: 1,000칸 × 60초 주기 = 약 17 req/s → 메모리 DB면 충분. 1만 칸 × 60초 = 약 167 req/s → ACME로는 불가.
+
+프로젝트 영향:
+- **본 프로젝트는 Mobius 기반이므로, 이 수치는 "ACME의 한계"이지 PolaGrid 플랫폼의 한계가 아니다.** 같은 스크립트를 Mobius(Node.js + MySQL)에 돌려야 발표용 수치가 된다.
+- 메모리 DB는 재시작하면 데이터가 사라져 운영용이 아니다. 시뮬레이션 전용 CSE에만 쓸 수 있다.
+- 저장소가 병목이라는 결론은 Mobius에도 적용될 가능성이 크다 (MySQL 인덱스, CIN 보존 개수 `mni` 제한이 핵심 변수가 될 것으로 예상, 미측정).
+
 ## 출처
 - ACME 성능 개선 이력, tinyIoT 경량 위치: [oneM2M Industry Day 2023 자료](https://www.onem2m.org/images/news/2023/pdf/Industry_Day-2023-0011-Enhancement_to_oneM2M_Open_Sources.pdf), [ACME-oneM2M-CSE](https://github.com/ankraft/ACME-oneM2M-CSE)
 - 참고 도구(부하·적합성): [oneM2MTester](https://github.com/IoTKETI/oneM2MTester), [oneM2M-IoT-Device-Simulator](https://github.com/oneM2M-Tutorials/oneM2M-IoT-Device-Simulator)

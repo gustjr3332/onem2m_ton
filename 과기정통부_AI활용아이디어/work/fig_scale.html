@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<style>
+  body { margin:0; background:#fff; font-family:'Malgun Gothic',sans-serif; color:#1b2a3a; }
+  .wrap { width:1600px; height:560px; position:relative; }
+  svg text { font-family:'Malgun Gothic',sans-serif; }
+</style></head>
+<body><div class="wrap">
+<svg width="1600" height="560" viewBox="0 0 1600 560" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="ar" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#1F4E79"/></marker>
+  </defs>
+  <!-- 단계 1: 공부방 창 -->
+  <text x="190" y="44" text-anchor="middle" font-size="30" font-weight="700" fill="#1F4E79">① 공부방 창 1개</text>
+  <text x="190" y="80" text-anchor="middle" font-size="22" fill="#555">12칸</text>
+  <g transform="translate(95,110)">
+    <rect x="0" y="0" width="190" height="150" fill="none" stroke="#1F4E79" stroke-width="4"/>
+    <g fill="#F6D39A" stroke="#1F4E79" stroke-width="1.5">
+      <rect x="8" y="8" width="38" height="40"/><rect x="54" y="8" width="38" height="40"/><rect x="100" y="8" width="38" height="40"/><rect x="146" y="8" width="38" height="40" fill="#1F4E79"/>
+      <rect x="8" y="55" width="38" height="40"/><rect x="54" y="55" width="38" height="40"/><rect x="100" y="55" width="38" height="40"/><rect x="146" y="55" width="38" height="40" fill="#1F4E79"/>
+      <rect x="8" y="102" width="38" height="40"/><rect x="54" y="102" width="38" height="40"/><rect x="100" y="102" width="38" height="40"/><rect x="146" y="102" width="38" height="40"/>
+    </g>
+  </g>
+  <path d="M320 185 L420 185" stroke="#1F4E79" stroke-width="4" marker-end="url(#ar)"/>
+  <!-- 단계 2: 교실·도서관 -->
+  <text x="610" y="44" text-anchor="middle" font-size="30" font-weight="700" fill="#1F4E79">② 교실·도서관 한 층</text>
+  <text x="610" y="80" text-anchor="middle" font-size="22" fill="#555">창 여러 개, 약 100칸</text>
+  <g transform="translate(445,110)" stroke="#1F4E79" stroke-width="2">
+    <g id="win">
+      <rect x="0" y="0" width="70" height="150" fill="#F6D39A"/>
+      <line x1="0" y1="50" x2="70" y2="50"/><line x1="0" y1="100" x2="70" y2="100"/><line x1="35" y1="0" x2="35" y2="150"/>
+    </g>
+    <use href="#win" x="85"/><use href="#win" x="170"/><use href="#win" x="255"/>
+    <rect x="255" y="0" width="35" height="50" fill="#1F4E79"/><rect x="170" y="0" width="35" height="50" fill="#1F4E79"/>
+  </g>
+  <path d="M800 185 L900 185" stroke="#1F4E79" stroke-width="4" marker-end="url(#ar)"/>
+  <!-- 단계 3: 건물 -->
+  <text x="1110" y="44" text-anchor="middle" font-size="30" font-weight="700" fill="#1F4E79">③ 학교·공공건물 전체</text>
+  <text x="1110" y="80" text-anchor="middle" font-size="22" fill="#555">층·방향별 구역, 수천 칸</text>
+  <g transform="translate(930,100)">
+    <rect x="0" y="0" width="360" height="175" fill="#EEF2F7" stroke="#1F4E79" stroke-width="4"/>
+    <g fill="#F6D39A" stroke="#1F4E79" stroke-width="1">
+      <rect x="15" y="15" width="100" height="40"/><rect x="130" y="15" width="100" height="40"/><rect x="245" y="15" width="100" height="40" fill="#1F4E79"/>
+      <rect x="15" y="68" width="100" height="40"/><rect x="130" y="68" width="100" height="40"/><rect x="245" y="68" width="100" height="40" fill="#1F4E79"/>
+      <rect x="15" y="121" width="100" height="40"/><rect x="130" y="121" width="100" height="40"/><rect x="245" y="121" width="100" height="40"/>
+    </g>
+  </g>
+  <text x="1360" y="150" font-size="22" fill="#1F4E79" font-weight="700">서쪽 구역</text>
+  <text x="1360" y="180" font-size="22" fill="#555">오후에 함께 회전</text>
+
+  <!-- 공통 AI 서버 -->
+  <rect x="330" y="360" width="940" height="110" rx="14" fill="#1F4E79"/>
+  <text x="800" y="405" text-anchor="middle" font-size="30" font-weight="700" fill="#fff">AI 제어 서버 + 표준 IoT 플랫폼 (하나로 공통)</text>
+  <text x="800" y="445" text-anchor="middle" font-size="23" fill="#DCE6F2">칸마다 조도·각도 기록 → AI가 칸별 각도 예측 → 구역 단위로 한 번에 명령</text>
+  <path d="M190 290 L190 415 L325 415" fill="none" stroke="#1F4E79" stroke-width="3" stroke-dasharray="8 6"/>
+  <path d="M610 290 L610 355" stroke="#1F4E79" stroke-width="3" stroke-dasharray="8 6"/>
+  <path d="M1110 290 L1110 355" stroke="#1F4E79" stroke-width="3" stroke-dasharray="8 6"/>
+  <text x="800" y="525" text-anchor="middle" font-size="24" fill="#333">칸 수가 늘어도 서버와 앱은 그대로 — 가상 1,000칸 등록·기록 부하 실험에서 실패 0건</text>
+</svg>
+</div></body></html>
