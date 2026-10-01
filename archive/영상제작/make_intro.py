@@ -16,8 +16,9 @@ from PIL import Image, ImageDraw, ImageFont
 
 HERE = Path(__file__).parent
 GEN = HERE / "intro_gen"
-SRC_CLIP = HERE / "04_PolaGrid_시연영상.mp4"
-OUT = HERE / "PolaGrid_소개영상.mp4"
+ASSETS = HERE.parents[1] / "docs" / "제출용_AI공모전자료"   # 영상 원본·결과물 위치(스크립트는 archive로 이동)
+SRC_CLIP = ASSETS / "04_PolaGrid_시연영상.mp4"
+OUT = ASSETS / "PolaGrid_소개영상.mp4"
 W, H, FPS, TOTAL = 1920, 1080, 30, 30.0
 SR = 24000                                   # Gemini TTS 출력: 24kHz 16bit mono PCM
 IMAGE_MODEL, TTS_MODEL, VOICE = "gemini-3-pro-image", "gemini-3.8-flash-lite-tts", "Charon"   # Charon: 남성, Informative
