@@ -93,6 +93,25 @@
 - 한계: 1회 측정, 클라이언트·CSE 같은 PC, 기본 설정 fan-out은 앞선 1,000칸 측정 자원이 남은 DB에서 잼(WAL은 새 DB).
 - 측정 중 tinyIoT 버그 2건 추가 발견(`sim/README.md`): GRP fan-out으로 만든 자원에 구독 알림이 안 감(패치함), 멤버 100개 GRP가 있으면 재시작 시 stack smashing으로 죽음(40개는 정상, 미수정).
 
+### 0-4d. 1,000칸 계층 측정 (2026-10-01, 같은 PC·WSL, 원본 `results/scale_curve_tinyiot_1001.txt`)
+
+MN-CSE M개 × 칸 100개, 구역(MN)마다 GRP 1개, 칸마다 command CNT + SUB. 명령 1회 = M개 구역에 동시에 GRP fopt → 모든 칸에 알림이 도착할 때까지. 10회, 단계마다 새 DB, 알림 수신기는 구역별 별도 프로세스(`tools/hier_test.py`, `tools/run_scale_curve.sh`).
+
+| MN × 칸 | 엣지에서 직접 (p50 / p95) | IN 경유 (p50 / p95) | 시스템 CPU 평균 / 최대 |
+|---|---|---|---|
+| 1 × 100 | 95 / 154 ms | 187 / 207 ms | 6% / 38% |
+| 2 × 100 | 126 / 180 ms | 233 / 285 ms | 10% / 38% |
+| 5 × 100 | 187 / 269 ms | 369 / 438 ms | 20% / 100% |
+| **10 × 100 = 1,000칸** | **349 / 382 ms** | **676 / 801 ms** | 34% / 100% |
+| 10 × 100 + 배경 조도 17 req/s | 335 / 461 ms | 672 / 731 ms | 32% / 100% |
+
+- **1,000칸 통과 기준(p95 ≤ 5s) 통과.** 엣지 직접 382 ms, IN 경유 801 ms. 알림 누락 0 / 10,000.
+- IN 경유는 엣지 직접의 약 2배 지연 → "구역 제어는 엣지(MEC)에서" 설계의 수치 근거.
+- MN 수를 10배로 늘려도 지연은 약 2.5배(154 → 382 ms). MN이 한 PC에 몰려 CPU 최대치가 100%에 닿은 상태라, MN을 별도 기기에 두면 더 줄 것으로 본다(미측정).
+- **주의: 이전 측정 자원이 쌓인 DB(MN당 수천 개 AE·SUB)에서는 같은 1,000칸이 p95 7.8초(배경 부하 17 req/s에서 10.5초), 배경 170 req/s에서는 MN이 30초 응답 없음.** 새 DB와 10~20배 차이. 원인(자원 수에 비례하는 탐색 등)은 미확인 → 칸 상태가 오래 쌓이는 장시간 운영 측정이 필요(`results/hier_tinyiot_1001.txt` 앞 세 블록).
+- 처음엔 측정 클라이언트(파이썬 한 프로세스) 병목을 의심해 수신기를 구역별 프로세스로 나눴으나, 오래된 DB에서는 오히려 느려졌다(`results/hier_tinyiot_1001_singleproc.txt`). 결론을 가른 건 DB 상태였다.
+- IN 경유 fopt가 오래된 DB에서 가끔 404를 돌려주면서도 실제 전달은 됨(새 DB에서는 200). 원인 미확인.
+
 ### 0-5. 측정 도구 (`tools/`)
 
 | 파일 | 내용 |
@@ -102,7 +121,8 @@
 | `tools/bench_acme.sh`, `tools/acme_configs/*.ini` | ACME 설정 3종 × 구조 2종 자동 비교 |
 | `tools/bench_tinyiot.sh` | tinyIoT CSE 1개에 같은 조건 측정 + CSE CPU 최대치 기록 (WSL) |
 | `tools/fanout_test.py`, `tools/run_fanout.sh` | 구역 명령 전달 지연: GRP fan-out vs 개별 POST, SUB 알림 도착까지 |
-| `tools/run_disk_mn.sh`, `tools/run_tmpfs_mn.sh` | mn001을 디스크/tmpfs에서 다시 띄우기 (진단용) |
+| `tools/run_disk_mn.sh`, `tools/run_tmpfs_mn.sh`, `tools/run_in.sh` | mn001을 디스크/tmpfs에서 다시 띄우기(진단용), IN 띄우기 |
+| `tools/hier_test.py`, `tools/run_hier.sh`, `tools/run_scale_curve.sh` | 계층 측정: MN M개 × 칸 P개, 엣지 직접 vs IN 경유, 배경 부하, 단계별 새 DB + CPU 기록 |
 
 알려진 함정:
 - AE를 모두 같은 originator로 등록하면 403이 난다. AE마다 고유 originator를 쓴다.
@@ -110,7 +130,7 @@
 
 ### 0-6. 다음 할 일
 
-1. ~~tinyIoT 벤치마크~~ → 완료(0-4c). 관문 통과. 남은 것: 멤버 100개 GRP 재시작 크래시 원인 수정 또는 구역 크기 40칸 이하로 설계, IN-MN 계층(MN 10개 × 100칸 = 1,000칸) 동시 측정.
+1. ~~tinyIoT 벤치마크~~ → 완료(0-4c). ~~GRP 재시작 크래시~~ → 패치(`sim/README.md` 4번). ~~1,000칸 계층 측정~~ → 통과(0-4d). 남은 것: 자원이 쌓인 DB에서 10~20배 느려지는 원인 확인(장시간 운영 측정), MN을 여러 기기에 나눈 측정.
 2. tinyIoT MN의 `mni` 제한이 처리량에 주는 영향 확인(저장소 설정 영향은 0-4c에서 확인).
 3. 폐루프 시뮬레이터 v0: 태양 모델 + 명령 수신 + 조도 재계산, 10칸.
 4. 열린 질문: 편광 필름·서보 2칸 분량 보유 여부.
