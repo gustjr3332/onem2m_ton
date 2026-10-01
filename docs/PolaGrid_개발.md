@@ -13,7 +13,9 @@
 ### 0-1. 확정 사항
 
 - A안(EdgePdM)을 중단하고 **PolaGrid 단독**으로 진행한다. EdgePdM 문서는 `EDGE_PDM_B/`에 보관.
-- 본 프로젝트의 CSE는 **Mobius 기반**이다(09-29).
+- CSE는 **tinyIoT 계층 구조**로 정한다(10-01, 09-29의 Mobius 결정을 변경). 구역마다 엣지(MEC)에 MN-CSE를 두고 칸을 나눠 맡기며(예: MN 10개 × 100칸), IN-CSE도 tinyIoT. Mobius IN은 서로 다른 구현체 간 상호운용성 시연·대체용, ACME는 제외(최대 78 req/s).
+  - 근거: 2026 대회는 6th oneM2M International Hackathon 겸 ESTIMED Hackathon #2("Building a Scalable Cross Industry Solution by Bridging IoT and Edge", oneM2M + ETSI MEC 필수, ACME·tinyIoT·Mobius + MEC Sandbox 허용). 과거 수상작은 실물 양방향 제어와 최신 표준 기능 활용이 공통점.
+  - 확정 관문(Week 0): MN 1개에 100칸, 구역 명령 p95 ≤ 5s. 실패하면 IN을 Mobius로 바꾸고 MN 유지 여부를 다시 판단.
 - 팀은 **1인**(기획·하드웨어·AI·플랫폼 전부). 과기정통부 AI 활용 아이디어 공모전 신청서는 v3로 제출 완료.
 - 상세 계획(7주 일정, 약 78시간): `PolaGrid_계획서_V2.md`
 
@@ -68,6 +70,29 @@
 - 100노드 RSS 합계 541MB, load avg 0.4, 오류 로그 0건
 - upstream 버그 2건 발견(seslabSJU/tinyIoT @ 832205f): `sqlite_implement.c:196` 콤마 누락으로 `DB_SQLITE` 빌드 실패(패치 `sim/patches/`), MN이 원격 CSE 조회에서 403을 받으면 segfault
 
+### 0-4c. tinyIoT MN 측정 (2026-10-01, WSL Ubuntu-24.04, i7-1195G7 8스레드 / WSL 7.8GB, 원본 `results/*_1001.txt`)
+
+조건은 ACME 2차와 같다(칸 1,000개 설치 후 CIN 3,000건, 동시 20). 대상은 MN-CSE 1개(`TinyIoT-mn001`, SQLite).
+
+| 저장소 설정 | 칸마다 AE 운영 처리량 | zone마다 AE | CIN p95 (칸마다 AE) | CSE CPU 최대 |
+|---|---|---|---|---|
+| 기본(SQLite, 커밋마다 fsync) | 69 req/s | 49 req/s | 330 ms | 7% |
+| tmpfs(진단용, 디스크 I/O 제거) | 690 req/s | 230 req/s | 35 ms | 27% |
+| **WAL + synchronous=NORMAL 패치** | **577 req/s** | 190 req/s | 42 ms | 17% |
+
+구역 명령 전달(`tools/fanout_test.py`, 칸 100개, 칸마다 command CNT + SUB, 20회, 명령 POST → 100칸 모두 알림 도착까지):
+
+| 저장소 | GRP fan-out 1회 | 칸마다 개별 POST(동시 20) |
+|---|---|---|
+| 기본 | p50 1,637 ms / p95 2,655 ms | p50 2,755 ms / p95 5,333 ms |
+| WAL 패치 | **p50 106 ms / p95 151 ms** | p50 1,086 ms / p95 2,125 ms |
+
+- **Week 0 관문(MN 1개 · 100칸 · p95 ≤ 5s) 통과.** WAL 패치 + GRP fan-out에서 p95 151 ms.
+- 기본 설정의 병목은 CPU가 아니라 SQLite 커밋마다의 디스크 동기화다(CPU 7%, tmpfs에서 10배). WAL 패치로 ACME 최대치(78 req/s)의 약 7배.
+- zone마다 AE 구조는 tinyIoT에서도 이득이 없다(ACME와 같은 결론).
+- 한계: 1회 측정, 클라이언트·CSE 같은 PC, 기본 설정 fan-out은 앞선 1,000칸 측정 자원이 남은 DB에서 잼(WAL은 새 DB).
+- 측정 중 tinyIoT 버그 2건 추가 발견(`sim/README.md`): GRP fan-out으로 만든 자원에 구독 알림이 안 감(패치함), 멤버 100개 GRP가 있으면 재시작 시 stack smashing으로 죽음(40개는 정상, 미수정).
+
 ### 0-5. 측정 도구 (`tools/`)
 
 | 파일 | 내용 |
@@ -75,6 +100,9 @@
 | `tools/scale_smoke.py` | 칸 N개 설치 + 운영 쓰기 측정 (`--layout ae\|zone`, `--writes`) |
 | `tools/locustfile.py` | Locust 부하 시나리오 (칸 사용자 + zone 제어 사용자) |
 | `tools/bench_acme.sh`, `tools/acme_configs/*.ini` | ACME 설정 3종 × 구조 2종 자동 비교 |
+| `tools/bench_tinyiot.sh` | tinyIoT CSE 1개에 같은 조건 측정 + CSE CPU 최대치 기록 (WSL) |
+| `tools/fanout_test.py`, `tools/run_fanout.sh` | 구역 명령 전달 지연: GRP fan-out vs 개별 POST, SUB 알림 도착까지 |
+| `tools/run_disk_mn.sh`, `tools/run_tmpfs_mn.sh` | mn001을 디스크/tmpfs에서 다시 띄우기 (진단용) |
 
 알려진 함정:
 - AE를 모두 같은 originator로 등록하면 403이 난다. AE마다 고유 originator를 쓴다.
@@ -82,8 +110,8 @@
 
 ### 0-6. 다음 할 일
 
-1. **Mobius 벤치마크**: Mobius + MySQL을 Docker로 띄우고 `scale_smoke.py`를 같은 조건으로 실행(약 40분). Mobius의 originator·경로 규칙에 맞춰 스크립트 수정이 필요할 수 있다.
-2. Mobius에서 CIN 보존 개수(`mni`) 제한과 MySQL 인덱스가 처리량에 주는 영향 확인.
+1. ~~tinyIoT 벤치마크~~ → 완료(0-4c). 관문 통과. 남은 것: 멤버 100개 GRP 재시작 크래시 원인 수정 또는 구역 크기 40칸 이하로 설계, IN-MN 계층(MN 10개 × 100칸 = 1,000칸) 동시 측정.
+2. tinyIoT MN의 `mni` 제한이 처리량에 주는 영향 확인(저장소 설정 영향은 0-4c에서 확인).
 3. 폐루프 시뮬레이터 v0: 태양 모델 + 명령 수신 + 조도 재계산, 10칸.
 4. 열린 질문: 편광 필름·서보 2칸 분량 보유 여부.
 

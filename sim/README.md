@@ -15,6 +15,8 @@ tinyIoT(oneM2M CSE) 기반으로 중앙 서버(IN-CSE) 1개 + 현장 노드(MN-C
 
 ## 사용법
 
+`.build`에는 `patches/`의 4개(콤마 누락, fopt 알림, WAL, TEXT 버퍼 넘침)가 모두 적용돼 있다. 새로 만들 때는 `~/tinyIoT/source/server` 사본에 `patch -p3 < patches/<파일>`을 차례로 적용한 뒤 `gen_nodes.sh`. IN이 먼저 떠 있어야 MN이 등록된다(`tools/run_in.sh`).
+
 ```bash
 cd ~/tinyIoT/source/server && ./server      # 1) IN 먼저
 cd ~/polargrid   # 이 저장소의 sim/ 내용을 ~/polargrid 로 복사해 사용
@@ -41,6 +43,13 @@ cd ~/polargrid   # 이 저장소의 sim/ 내용을 ~/polargrid 로 복사해 사
 
 1. `sqlite_implement.c:196` fcnt 스키마 항목 뒤 콤마 누락 → `DB_SQLITE` 빌드 실패. `~/polargrid/.build` 사본에만 패치
 2. MN이 원격 CSE 조회에서 403을 받으면 `Remote CSE is not online : 403` 로그 후 segfault
+3. GRP `fopt`로 멤버에 자원을 만들면 그 멤버의 SUB 알림이 나가지 않음(`onem2m.c` fan-out 루프가 `notify_via_sub`를 안 부름). `patches/fopt-member-notify.patch`로 `.build` 사본에만 수정
+4. 멤버 100개인 GRP가 DB에 있으면 재시작 시 `*** stack smashing detected ***`로 종료. 원인: `sqlite_implement.c` `db_get_all_resource_as_rtnode()`(:1019, :1046, :1093)가 TEXT 열을 `char buf[256]`에 길이 제한 없이 `strncpy`. 같은 패턴이 7곳(:394/410, :489/505, :1019/1046/1093, :1235/1272, :1314/1368, :2354/2375). 256바이트를 넘는 모든 TEXT(`mid`·`acpi`·`nu`·`poa`·`lbl`·`dcse`·CIN `con`)가 메모리를 덮고, 2,312바이트를 넘으면 크래시(멤버 id 25자 기준 83개부터, 82개는 통과). CIN `con` 3,000바이트도 재시작 크래시 확인. `patches/grp-mid-overflow.patch`(13 hunk, 복사 대신 sqlite 행 포인터 사용)로 수정, `~/grp_debug`에서 ASan·멤버 100/300개·재시작 검증. 10-01 `.build`에 적용, MN 100개 재빌드. 멤버 100개 GRP가 든 DB로 재시작 2회 정상. 크래시 DB는 `~/polargrid/db_backup/`
+5. GRP `fopt` 응답이 64KB(`httpd.c` `BUF_SIZE`)를 넘으면(멤버 약 150개 이상) 잘린 본문을 전체 Content-Length로 보냄. 미수정
+
+## 성능 패치
+
+- `patches/sqlite-wal-normal.patch`: SQLite를 `journal_mode=WAL`, `synchronous=NORMAL`로 연다(트랜잭션 시작 전). 운영 처리량 69 → 577 req/s(칸 1,000개, CIN 3,000건). 앱 크래시에는 안전, 전원 차단 시 마지막 커밋 일부 유실 가능. 측정 결과는 `docs/PolaGrid_개발.md` 0-4c
 
 ## 다음 할 일
 
