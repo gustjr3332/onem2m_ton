@@ -44,4 +44,4 @@ def test_command_reaches_every_cell_and_desk_reading_comes_back(loop):
 
 def test_each_role_gets_only_its_rights(loop):
     _, zone, _ = loop
-    check_acp(zone.c, zone.run)
+    check_acp(zone.c, zone.run, zone.room.n_cells)

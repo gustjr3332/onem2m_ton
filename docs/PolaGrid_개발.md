@@ -42,7 +42,7 @@
 |---|---|---|---|
 | 1 | 10/5~11 | ~~킥오프~~, ~~메이커톤 기획안 제출~~, ~~Discord 가입~~, 부품 확인·주문(12칸분), 실물 칸 1 각도 vs 조도 10점, 실물 칸 1 oneM2M 연동, **MEC Sandbox(try-mec.etsi.org) MEC011 시험**(0-7b), TR-0077/0078 읽기 | command POST 후 5초 안에 서보 이동, MEC 방식 결정(Sandbox MEC011 / 로컬 mock) |
 | 2 | 10/12~18 | 실물 칸 2, **AI ①** 기여도 추정(+ 운전 데이터 온라인 추정, 0-8 #3), ~~tinyIoT 기반 결정~~(10-07 앞당겨 완료, 0-4f), ~~ACP 분리~~(10-07 완료, 0-4g), Discord 멘토 질의 1건(tinyIoT 버그·MEC 배치 옵션) | 칸 2개의 자리별 기여도 표 출력 |
-| 3 | 10/19~25 | **AI ②** 각도 결정 + baseline 3종(실물), 12칸 창 조립 시작, **FlexContainer·라벨 검색**(0-7절, `zone.py`) | 실물 2칸에서 지표 자동 계산 CSV, ~~`CAdmin` 없이 폐루프 동작~~(10-07 달성) |
+| 3 | 10/19~25 | **AI ②** 각도 결정 + baseline 3종(실물), 12칸 창 조립 시작, ~~FlexContainer·라벨 검색~~(10-07 완료, 0-4h) | 실물 2칸에서 지표 자동 계산 CSV, ~~`CAdmin` 없이 폐루프 동작~~(10-07 달성) |
 | 4 | 10/26~11/1 | 12칸 설치·실사용 데이터 수집, **AI ③** 회귀 예측 + 앱 보정(모드·슬라이더) + 100칸 눈부심 원인(0-8 #4), 안전 동작, 실물 ESP32 MQTT | 12칸이 하루 동안 자동 운전 |
 | 5 | 11/2~8 | **11/5 메이커톤 시연**, 이후 실물 12 + 가상 88 = 100칸 폐루프(가상 100칸 v0는 완료, 0-4e) | 시연 5회 연속 성공 |
 | 6 | 11/9~15 | AI 제어 앱을 MEC 앱으로 이전(MEC011 등록, Week 1 결정 방식), 1,000칸 폐루프(MN 10개) → 10,000칸 스케일 곡선, 장시간 운영 측정(DB 누적 저하, 0-4d), BMS mock, 공개 GitHub 정리, **hackster.io 초안**(이전 우승작 구조 참고) | 스케일 곡선 + baseline 비교 수치, hackster.io 초안 |
@@ -249,6 +249,23 @@ MN 1개 성능(새 DB, 1회, 클라이언트·CSE 같은 PC):
 - 제어 결과는 그대로다. 100칸 p95가 815 → 951 ms(1회 측정, 차이가 ACP 검사 비용인지 흔들림인지 미확인). 통과 기준 5초 안.
 - 한계: ACP가 칸 수만큼 생긴다(100칸 = ACP 102개). 컨트롤러가 칸의 angle에도 쓸 수 있다(command와 같은 ACP). TLS는 아직(0-7). 컨트롤러를 IN 경유로 돌리는 폐루프는 안 돌려 봄(hier_test로 IN 경유 ACP 동작만 확인, 0-4f).
 
+### 0-4h. FlexContainer + 라벨 발견 (2026-10-07, 원본 `results/closed_loop_1007.txt` "FCNT" 블록)
+
+- **칸 상태를 표준 SDT FlexContainer로**: `<run>p<i>/state` = `cod:opeLl`(TS-0023 ModuleClass openLevel, tinyIoT `sdt_definitions/cod-mc.fcp`에 있음). `opeLl` = 100·cos²(각도), 0 닫힘 ~ 100 열림. 각도 이력 CIN(`angle` CNT)은 없앴다. **CSE가 스키마를 검사**한다: `opeLl`에 문자열을 넣으면 400.
+  - 고른 이유: SDT에 편광 창 전용 모듈은 없다. `openLevel`이 "얼마나 열렸나"를 표준 의미로 나타내고(커튼·셰이드에 쓰는 모듈), 다른 앱이 PolaGrid 전용 형식을 몰라도 읽을 수 있다. 가로등 모듈에 `lightPolarizationAxis`가 있으나 필수 전력 속성이 많아 맞지 않음.
+- **라벨 발견**: command CNT에 `polagrid/<run>/command`, state에 `polagrid/<run>/state` 라벨. **컨트롤러는 칸 이름을 하드코딩하지 않고 `fu=1&lbl=...&ty=3` 발견 결과로 GRP를 만든다.** 뷰어도 같은 방식으로 칸 상태 100개를 찾는다(발견 개수 제한에 안 걸림).
+- 발견 권한: 발견은 CSE base의 ACP(tinyIoT `defaultACP`)로 검사하고, CSE base 자체는 수정이 막혀 있다(405). 그래서 `defaultACP`에 "`C*ctl`·`C*view`(IN 경유 형태 포함)는 발견만 가능" 규칙 1개를 추가한다(`zone.grant_discovery`, 중복 추가 안 함).
+- 점검(`check_acp`, 테스트 2개 통과): 칸 p1이 p0/state 수정 403, 뷰어 쓰기 403, 뷰어 조회 200, 잘못된 openLevel 400, 뷰어가 찾은 state 수 = 칸 수.
+
+| 구성 | 명령 → 책상 조도 p50 / p95 / max | 눈부심 h (CSE / 직접) | ACP만(0-4g) p95 |
+|---|---|---|---|
+| 12칸 AI ①+② | 21 / 32 / 59 ms | 0.25 / 0.33 | 43 ms |
+| 12칸 AI ③ | 17 / 28 / 32 ms | 0.00 / 0.00 | 29 ms |
+| 100칸 AI ③ | 549 / 881 / 991 ms | 1.25 / 1.25 | 951 ms |
+
+- 제어 결과는 그대로. 지연은 비슷하거나 약간 줄었다(CIN 생성 대신 FCNT 갱신, 1회 측정).
+- **새로 본 보안 구멍**: MN의 `defaultACP`에 `{"acor":["/*"],"acop":63}`(SP 상대 originator 전부에게 모든 권한)과 `{"acor":["all"],"acop":1}` 규칙이 있다. IN 경유 요청(`/tinyiot/...`)은 CSE base에서 무엇이든 만들 수 있다는 뜻. 출처(tinyIoT 기본값인지 09-29 우리 설정 변경인지) 확인 후 좁혀야 한다(0-8 #7).
+
 ### 0-5. 측정 도구 (`tools/`)
 
 | 파일 | 내용 |
@@ -284,7 +301,8 @@ MN 1개 성능(새 DB, 1회, 클라이언트·CSE 같은 PC):
 - [x] tinyIoT 기반 결정: 최신 `c140495`로 이전, 패치 4개 재적용, 전체 재측정(10-07, 0-4f).
 - [x] 직렬화 락 영향: 최신 기반에서 처리량 458 req/s, 1,000칸 엣지 p95 344 ms로 회복. IN은 락 없이 운영. 락 범위 축소는 필요할 때만(0-8 #1).
 - [x] ACP 분리(10-07 앞당겨 완료, 0-4g): 역할별 originator, `CAdmin`은 ACP 생성에만, 권한 점검 403 확인.
-- [ ] FlexContainer + 라벨 검색(Week 3, 루브릭 우선순위 2위).
+- [x] FlexContainer + 라벨 발견(10-07 앞당겨 완료, 0-4h): 칸 상태 `cod:opeLl`, 컨트롤러가 라벨 발견으로 GRP 구성.
+- [ ] MN `defaultACP`의 `/*` 전체 권한 규칙 좁히기(0-8 #7).
 - [ ] IN을 PostgreSQL로 되돌릴지: `sudo -u postgres createdb -O tinyuser tinydb_latest` 실행 후 IN 경유 재측정(사람만 가능).
 - [ ] AI ① 운전 데이터 온라인 추정(Week 2, 0-8 #3).
 - [ ] AI ③ 개선(Week 4): 12칸 눈부심 0.24 h(`ai_compare_1005`) → ①+② 수준(0.06 h), 100칸 1.25 h 원인(0-8 #4), 사용자 보정 시나리오 비교 추가.
@@ -314,7 +332,7 @@ MN 1개 성능(새 DB, 1회, 클라이언트·CSE 같은 PC):
 | Communication protocols | 폐루프 전부 HTTP. MQTT는 IN↔MN 연결만 확인 | **Expert**: 장치와 앱이 다른 프로토콜 | 실물 ESP32는 MQTT(저전력·상시 연결), 대시보드·BMS·컨트롤러는 HTTP. 선택 이유를 문서에 적기 (실물 단계, 소) |
 | Innovative scenarios | 장치(칸) → CSE → 컨트롤러·대시보드·BMS mock 여러 앱, 폴링 대신 SUB·GRP | Expert 유지 | 대시보드·BMS mock 구현 (Week 5~6). "oneM2M 서비스 기능을 장치·앱에 구현하지 않았다" 사례로 서술: 그룹 명령, 구독, 이력 보존(mni) |
 | **Security and Privacy** | ~~Emerging~~ → 10-07 역할별 ACP 분리(0-4g), 남은 것: TLS | Expert: ACP를 용도별로 분리 + 보안 프로토콜 | **가장 큰 구멍.** ACP 설계: 칸(자기 angle·lux 쓰기, command 읽기), 컨트롤러(GRP·command 쓰기, desks 읽기), 대시보드·BMS(읽기 전용), 환경 센서(sun·desks 쓰기). `zone.py`가 AE마다 ACP를 만들고 `CAdmin` 의존 제거. TLS는 tinyIoT가 HTTPS를 지원하는지부터 확인. 카메라 없음·조도만 수집이 프라이버시 서술 (Week 2~3, 중) |
-| **Data Interoperability** | **Emerging**: CIN `con`에 JSON 문자열(불투명), 라벨 없음 | Proficient~Expert | 칸 상태를 **FlexContainer**(예: `angle`·`lux` 속성)로, 라벨(`lbl`)과 필터 검색(`fu=1`)으로 칸·책상 발견. 여력 되면 SDT(TS-0023)·SAREF 매핑 (Week 3, 중) |
+| **Data Interoperability** | ~~Emerging~~ → 10-07 칸 상태 SDT FlexContainer `cod:opeLl` + 라벨 발견(0-4h). 남은 것: 책상 조도·명령도 표준 형식으로, SAREF 매핑 | Proficient~Expert | 칸 상태를 **FlexContainer**(예: `angle`·`lux` 속성)로, 라벨(`lbl`)과 필터 검색(`fu=1`)으로 칸·책상 발견. 여력 되면 SDT(TS-0023)·SAREF 매핑 (Week 3, 중) |
 | CSE Handover & Service Continuity | 없음 | Proficient | 구역 MN이 죽으면 칸이 다른 MN에 다시 등록하고 구독을 복원, 중단 시간·유실 측정. 계획서 Week 6 장애 테스트와 합침 (선택, 중) |
 | oneM2M–MEC Application/VM Deployment | 로컬 Mp1 mock 계획 | Proficient~Expert | 킥오프에서 ESTIMED VM·MEC Sandbox 확인. 컨트롤러를 Docker MEC 앱으로 옮겨 Mp1 등록, 배포 절차 문서화 (Week 6) |
 | MEC Services | 없음 | Proficient | MEC 서비스 1개(위치 외)를 oneM2M으로 쓰기. 킥오프 확인 후 결정 |
@@ -350,6 +368,7 @@ MN 1개 성능(새 DB, 1회, 클라이언트·CSE 같은 PC):
 5. **tinyIoT 버그 6건**(10-07 최신 커밋 재확인: 1·5번 수정됨, 3·4·6번 남음, 2번 미확인. 공식 정리 `sim/TINYIOT_BUG_REPORTS.md`, 재현 스크립트 `sim/repro/`, 어디에도 올리지 않음)을 어디에 알릴지: 현재 규칙은 tinyIoT 관련 git에 배포 금지(gustjr3332만). 반면 Judge points는 공개 포럼 활동을 점수화한다. 이슈 보고를 하려면 규칙의 범위를 정해야 한다(보류).
    - **10-06 최신 커밋 재확인(일부)**: 우리가 쓰는 tinyIoT는 4월 7일 커밋(`832205f`)이고 upstream은 이미 123커밋 앞선 `c140495`(10-06)다. 패치 없이 빌드해 보니 **1번은 고쳐짐**, **3번은 그대로**(직접 CIN은 알림이 가고 fopt CIN은 안 감), 2·4·5번은 미확인, **6번은 판정 못 함**(3번 때문에 재현 스크립트가 돌지 않음, 동시 쓰기 변형은 결과 전에 중단). upstream에 락 관련 커밋(`revert route() lock`, `Fix rt->cb mainlock`)이 있으나 효과는 미검증. **우리 패치는 4월 코드 기준이라 최신 커밋에 그대로 적용된다는 보장이 없다.** 이슈를 올리기 전에 4·5·6번을 최신 커밋에서 다시 확인하고, 개발 기반을 최신 커밋으로 옮길지(패치 재적용·재측정 필요) 결정해야 한다.
 6. 100칸 서보 이동 시간·벽 반사광 같은 물리 모델 단순화(0-4e 한계), 실물 측정으로 교체 예정.
+7. **MN `defaultACP`에 `/*` 전체 권한**(0-4h): IN 경유 originator 누구나 CSE base에서 생성 가능. 출처 확인 후 `/tinyiot/C*ctl` 같은 필요한 형태만 남기기.
 
 ---
 

@@ -36,6 +36,21 @@ class Client:
             raise RuntimeError(f"POST {path} ty={ty}: {r.status_code} {r.text[:200]}")
         return r
 
+    def put(self, path, origin, body):
+        r = self._session().put(f"{self.host}/{self.cse}/{path}", headers=_headers(origin),
+                                data=json.dumps(body), timeout=30)
+        if r.status_code != 200:
+            raise RuntimeError(f"PUT {path}: {r.status_code} {r.text[:200]}")
+        return r
+
+    def discover(self, origin, **filters):
+        """Resource paths under the CSE base matching the filter criteria, e.g. discover(o, lbl="x", ty=3)."""
+        q = "&".join(f"{k}={v}" for k, v in {"fu": 1, **filters}.items())
+        r = self._session().get(f"{self.host}/{self.cse}?{q}", headers=_headers(origin), timeout=30)
+        if r.status_code != 200:
+            raise RuntimeError(f"discover {q}: {r.status_code} {r.text[:200]}")
+        return r.json().get("m2m:uril", [])
+
     def code(self, method, path, origin, body=None, ty=None):
         """HTTP status of one request, without raising (for access-control checks)."""
         return self._session().request(method, f"{self.host}/{self.cse}/{path}", headers=_headers(origin, ty),

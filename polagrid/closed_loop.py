@@ -44,17 +44,19 @@ def run_day(zone, ctl, day, controller, cloud, step_min):
     return {"glare_h": glare_h, "dark_h": dark_h, "mean_lux": lux_sum / steps, "moves": int(zone.moves)}
 
 
-def check_acp(client, run):
-    """Each role gets exactly its rights: a cell cannot touch another cell, the viewer cannot write."""
+def check_acp(client, run, n_cells):
+    """Each role gets exactly its rights: a cell cannot touch another cell, the viewer cannot write but can
+    find every cell's state by label. The CSE also rejects a state that breaks the openLevel schema."""
     view = roles(run)["view"]
     client.post("", view, {"m2m:ae": {"rn": f"{run}view", "api": "Npolagrid", "rr": False, "srv": ["3"]}}, 2)
-    cin = {"m2m:cin": {"con": "{}"}}
-    got = {"cell p1 -> p0/angle": client.code("POST", f"{run}p0/angle", f"C{run}p1", cin, 4),
-           "viewer -> env/desks": client.code("POST", f"{run}env/desks", view, cin, 4),
-           "viewer reads env/sun": client.code("GET", f"{run}env/sun", view),
-           "viewer reads p0/angle": client.code("GET", f"{run}p0/angle", view)}
-    want = {"cell p1 -> p0/angle": 403, "viewer -> env/desks": 403, "viewer reads env/sun": 200,
-            "viewer reads p0/angle": 200}
+    level = lambda v: {"cod:opeLl": {"opeLl": v}}
+    got = {"cell p1 -> p0/state": client.code("PUT", f"{run}p0/state", f"C{run}p1", level(50)),
+           "viewer -> env/desks": client.code("POST", f"{run}env/desks", view, {"m2m:cin": {"con": "{}"}}, 4),
+           "viewer reads p0/state": client.code("GET", f"{run}p0/state", view),
+           "cell p0 bad openLevel": client.code("PUT", f"{run}p0/state", f"C{run}p0", level("x")),
+           "viewer finds states": len(client.discover(view, lbl=f"polagrid/{run}/state", ty=28))}
+    want = {"cell p1 -> p0/state": 403, "viewer -> env/desks": 403, "viewer reads p0/state": 200,
+            "cell p0 bad openLevel": 400, "viewer finds states": n_cells}
     print("[acp] " + ", ".join(f"{k}={v}" for k, v in got.items()))
     assert got == want, f"access control differs: want {want}"
 
@@ -86,7 +88,7 @@ def main():
     zone.setup()
     ctl.setup(room.n_cells)
     print(f"[setup] {room.n_cells} cells on {a.cse}, run {run}")
-    check_acp(client, run)
+    check_acp(client, run, room.n_cells)
 
     if a.controller == "probe":
         make = lambda: evaluate.polagrid_probe(room.n_cells, a.probe)
