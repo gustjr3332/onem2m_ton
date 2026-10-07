@@ -254,7 +254,7 @@ MN 1개 성능(새 DB, 1회, 클라이언트·CSE 같은 PC):
 2. 실물 칸 1로 각도 vs 조도 10점 실측(Malus cos² 보정, AI ② 입력).
 3. 실물 칸 1을 tinyIoT MN에 연결(WSL mirrored 네트워킹 또는 포트 프록시).
 4. **MEC Sandbox 확인(진행 중)**: try-mec.etsi.org에서 MEC011로 `polagrid-daylight` 서비스 등록·조회가 되는지 → 되면 Mp1 mock은 만들지 않음, 안 되면 로컬 mock(0-7b).
-5. TR-0077(oneM2M–MEC 통합, 배치 옵션 A~D)·TR-0078(개발자 가이드) 읽고 우리 구조가 어느 옵션인지, Handover·MEC 서비스 점수 받는 법 정리.
+5. ~~TR-0077·MEC033 조사~~(10-07, `docs/MEC_연동_조사.md`): 지금 시연은 옵션 B, 목표는 옵션 C. MEC 장면은 MEC011 서비스 등록 + MEC033 IoT 플랫폼 등록. Handover는 MN 장애 → 네트워크 주도 재등록. FL은 AI ③ 계수 평균으로 저비용 가능성. TR-0078·TS-0042는 공개 위치 못 찾음 → 멘토 질의.
 6. ~~Discord 가입~~(10-07). Discord 내용은 MCP로 못 가져옴(봇은 서버 관리자가 초대해야 함, 사용자 토큰 자동화는 약관 위반) → 필요하면 Claude in Chrome으로 웹 Discord 읽기 또는 붙여넣기.
 
 **Week 2~4 소프트웨어 (부품 기다리는 동안)**
@@ -313,6 +313,7 @@ MN 1개 성능(새 DB, 1회, 클라이언트·CSE 같은 PC):
 - **소통은 Discord**(초대 예정): 공지·멘토링·공개/비공개 질의. Judge points(공개 활동)의 무대로 보인다.
 - **멘토에 tinyIoT 담당(JaeSeung Song)**, oneM2M–MEC 개발자 가이드 저자(Kaleb Gebremeskel)가 있다 → tinyIoT 버그 6건은 git이 아니라 Discord 멘토 질의로 알릴 수 있다(git 배포 금지 규칙과 충돌 없음, 결정은 보류 중인 0-8 #5).
 - **MEC 환경 = ETSI MEC Sandbox**(오픈소스, AdvantEDGE 기반). 온라인판 [try-mec.etsi.org](https://try-mec.etsi.org)에서 MEC011(앱 활성화·서비스 등록·발견) 등 MEC API를 Swagger로 써 볼 수 있다. → 자체 Mp1 mock 대신 Sandbox의 MEC011을 쓰는 쪽을 먼저 확인. Sandbox README 기준 지원 API에 **MEC033(MEC IoT API: IoT 플랫폼·장치 등록)**과 MEC046(센서 공유)이 있다 → tinyIoT CSE를 MEC033에 IoT 플랫폼으로 등록하면 "oneM2M–MEC 연동"과 "MEC Services" 점수 근거가 될 수 있다(실제 동작 미확인).
+- **조사 결과는 `docs/MEC_연동_조사.md`**(10-07). 
 - **참고 규격**: 루브릭 항목에 TR-0077(oneM2M–MEC 통합 시나리오: 배치 옵션 A~D, Handover, FL), TR-0086(VM 배포), TR-0084(FL)가 걸려 있다. 개발자 가이드는 TR-0078. 대회 목표 문구에 "oneM2M Release 5와 ETSI MEC에서 표준화 중인 AI 기능을 활용한 AIoT"가 있다(무엇을 쓸 수 있는지 미확인).
 - **경쟁**: 32팀·9개국, 한국 16팀. 비슷한 주제는 openSoom(실내 공기 환기), 2025 Nexus(건물 에너지 AI 에이전트). 차별점은 **실물 + 1,000칸 실측 스케일 곡선**.
 
