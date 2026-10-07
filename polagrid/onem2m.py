@@ -36,6 +36,11 @@ class Client:
             raise RuntimeError(f"POST {path} ty={ty}: {r.status_code} {r.text[:200]}")
         return r
 
+    def code(self, method, path, origin, body=None, ty=None):
+        """HTTP status of one request, without raising (for access-control checks)."""
+        return self._session().request(method, f"{self.host}/{self.cse}/{path}", headers=_headers(origin, ty),
+                                       data=json.dumps(body) if body else None, timeout=30).status_code
+
     def create(self, path, origin, content, ty=4):
         """Create a CIN holding `content` (a dict) under path."""
         return self.post(path, origin, {"m2m:cin": {"con": json.dumps(content)}}, ty)

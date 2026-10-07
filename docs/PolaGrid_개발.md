@@ -41,8 +41,8 @@
 | 주 | 기간 | 할 일 | 완료 기준 |
 |---|---|---|---|
 | 1 | 10/5~11 | ~~킥오프~~, ~~메이커톤 기획안 제출~~, ~~Discord 가입~~, 부품 확인·주문(12칸분), 실물 칸 1 각도 vs 조도 10점, 실물 칸 1 oneM2M 연동, **MEC Sandbox(try-mec.etsi.org) MEC011 시험**(0-7b), TR-0077/0078 읽기 | command POST 후 5초 안에 서보 이동, MEC 방식 결정(Sandbox MEC011 / 로컬 mock) |
-| 2 | 10/12~18 | 실물 칸 2, **AI ①** 기여도 추정(+ 운전 데이터 온라인 추정, 0-8 #3), ~~tinyIoT 기반 결정~~(10-07 앞당겨 완료, 0-4f), **ACP 분리 시작**, Discord 멘토 질의 1건(tinyIoT 버그·MEC 배치 옵션) | 칸 2개의 자리별 기여도 표 출력 |
-| 3 | 10/19~25 | **AI ②** 각도 결정 + baseline 3종(실물), 12칸 창 조립 시작, **ACP 분리 완료 + FlexContainer·라벨 검색**(0-7절, `zone.py`) | 실물 2칸에서 지표 자동 계산 CSV, `CAdmin` 없이 폐루프 동작 |
+| 2 | 10/12~18 | 실물 칸 2, **AI ①** 기여도 추정(+ 운전 데이터 온라인 추정, 0-8 #3), ~~tinyIoT 기반 결정~~(10-07 앞당겨 완료, 0-4f), ~~ACP 분리~~(10-07 완료, 0-4g), Discord 멘토 질의 1건(tinyIoT 버그·MEC 배치 옵션) | 칸 2개의 자리별 기여도 표 출력 |
+| 3 | 10/19~25 | **AI ②** 각도 결정 + baseline 3종(실물), 12칸 창 조립 시작, **FlexContainer·라벨 검색**(0-7절, `zone.py`) | 실물 2칸에서 지표 자동 계산 CSV, ~~`CAdmin` 없이 폐루프 동작~~(10-07 달성) |
 | 4 | 10/26~11/1 | 12칸 설치·실사용 데이터 수집, **AI ③** 회귀 예측 + 앱 보정(모드·슬라이더) + 100칸 눈부심 원인(0-8 #4), 안전 동작, 실물 ESP32 MQTT | 12칸이 하루 동안 자동 운전 |
 | 5 | 11/2~8 | **11/5 메이커톤 시연**, 이후 실물 12 + 가상 88 = 100칸 폐루프(가상 100칸 v0는 완료, 0-4e) | 시연 5회 연속 성공 |
 | 6 | 11/9~15 | AI 제어 앱을 MEC 앱으로 이전(MEC011 등록, Week 1 결정 방식), 1,000칸 폐루프(MN 10개) → 10,000칸 스케일 곡선, 장시간 운영 측정(DB 누적 저하, 0-4d), BMS mock, 공개 GitHub 정리, **hackster.io 초안**(이전 우승작 구조 참고) | 스케일 곡선 + baseline 비교 수치, hackster.io 초안 |
@@ -226,6 +226,29 @@ MN 1개 성능(새 DB, 1회, 클라이언트·CSE 같은 PC):
 | 12칸 AI ③ | 17 / 26 / 31 ms | 0.00 / 0.00 | 19 / 28 ms |
 | 100칸 AI ③ | 580 / 815 / 984 ms | 1.25 / 1.25 | 512 / 843 ms |
 
+### 0-4g. ACP 분리 (2026-10-07, 같은 PC·WSL, 원본 `results/closed_loop_1007.txt` "ACP" 블록)
+
+`polagrid/zone.py`: `CAdmin`은 시작할 때 ACP를 만드는 데만 쓰고, 실행 중 모든 요청은 역할별 AE originator로 보낸다.
+
+| 역할 (originator) | 권한 | 대상 |
+|---|---|---|
+| 칸 i (`C<run>p<i>`) | 전부 | 자기 command·angle만 (칸마다 ACP 1개) |
+| 구역 컨트롤러 (`C<run>ctl`) | 생성·조회·구독 | 칸 command(명령 쓰기), env(sun 읽기, desks 구독). GRP는 컨트롤러 AE 아래 `<run>ctl/grp` |
+| 뷰어 (`C<run>view`, 대시보드·BMS) | 조회·구독·발견만 | 칸·env |
+| 환경 센서 (`C<run>env`) | 전부 | sun, desks |
+
+- 컨트롤러·뷰어는 IN 경유 형태(`/tinyiot/C...`)도 ACP에 같이 넣었다(0-4f 조건).
+- 권한 자체 점검(`closed_loop.check_acp`, 매 실행 + `tests/test_closed_loop.py`): 칸 p1이 p0/angle에 쓰기 → **403**, 뷰어가 desks에 쓰기 → **403**, 뷰어 조회 → 200. 테스트 2개 통과.
+
+| 구성 | 명령 → 책상 조도 p50 / p95 / max | 눈부심 h (CSE / 직접) | ACP 전(0-4f) p50 / p95 |
+|---|---|---|---|
+| 12칸 AI ①+② | 26 / 43 / 74 ms | 0.25 / 0.33 | 26 / 42 ms |
+| 12칸 AI ③ | 19 / 29 / 43 ms | 0.00 / 0.00 | 17 / 26 ms |
+| 100칸 AI ③ | 561 / 951 / 1,264 ms | 1.25 / 1.25 | 580 / 815 ms |
+
+- 제어 결과는 그대로다. 100칸 p95가 815 → 951 ms(1회 측정, 차이가 ACP 검사 비용인지 흔들림인지 미확인). 통과 기준 5초 안.
+- 한계: ACP가 칸 수만큼 생긴다(100칸 = ACP 102개). 컨트롤러가 칸의 angle에도 쓸 수 있다(command와 같은 ACP). TLS는 아직(0-7). 컨트롤러를 IN 경유로 돌리는 폐루프는 안 돌려 봄(hier_test로 IN 경유 ACP 동작만 확인, 0-4f).
+
 ### 0-5. 측정 도구 (`tools/`)
 
 | 파일 | 내용 |
@@ -260,7 +283,8 @@ MN 1개 성능(새 DB, 1회, 클라이언트·CSE 같은 PC):
 **Week 2~4 소프트웨어 (부품 기다리는 동안)**
 - [x] tinyIoT 기반 결정: 최신 `c140495`로 이전, 패치 4개 재적용, 전체 재측정(10-07, 0-4f).
 - [x] 직렬화 락 영향: 최신 기반에서 처리량 458 req/s, 1,000칸 엣지 p95 344 ms로 회복. IN은 락 없이 운영. 락 범위 축소는 필요할 때만(0-8 #1).
-- [ ] ACP 분리(Week 2~3) → FlexContainer + 라벨 검색(Week 3). 루브릭 최대 구멍(0-7). IN 쪽 앱 originator(`/tinyiot/...`)를 MN ACP에 넣어야 한다(0-4f).
+- [x] ACP 분리(10-07 앞당겨 완료, 0-4g): 역할별 originator, `CAdmin`은 ACP 생성에만, 권한 점검 403 확인.
+- [ ] FlexContainer + 라벨 검색(Week 3, 루브릭 우선순위 2위).
 - [ ] IN을 PostgreSQL로 되돌릴지: `sudo -u postgres createdb -O tinyuser tinydb_latest` 실행 후 IN 경유 재측정(사람만 가능).
 - [ ] AI ① 운전 데이터 온라인 추정(Week 2, 0-8 #3).
 - [ ] AI ③ 개선(Week 4): 12칸 눈부심 0.24 h(`ai_compare_1005`) → ①+② 수준(0.06 h), 100칸 1.25 h 원인(0-8 #4), 사용자 보정 시나리오 비교 추가.
@@ -289,7 +313,7 @@ MN 1개 성능(새 DB, 1회, 클라이언트·CSE 같은 PC):
 | Innovative use of oneM2M | **GRP fan-out + SUB 알림**(구역 명령 1건 → 칸 전체), `mni` 사용. Expert 조건(group) 충족 | 유지 + 복합 속성 | 칸 lux를 TimeSeries로, 구독 `expirationCounter`·batch 알림 시험 (Week 3, 소) |
 | Communication protocols | 폐루프 전부 HTTP. MQTT는 IN↔MN 연결만 확인 | **Expert**: 장치와 앱이 다른 프로토콜 | 실물 ESP32는 MQTT(저전력·상시 연결), 대시보드·BMS·컨트롤러는 HTTP. 선택 이유를 문서에 적기 (실물 단계, 소) |
 | Innovative scenarios | 장치(칸) → CSE → 컨트롤러·대시보드·BMS mock 여러 앱, 폴링 대신 SUB·GRP | Expert 유지 | 대시보드·BMS mock 구현 (Week 5~6). "oneM2M 서비스 기능을 장치·앱에 구현하지 않았다" 사례로 서술: 그룹 명령, 구독, 이력 보존(mni) |
-| **Security and Privacy** | **Emerging**: 모든 요청이 `CAdmin` 하나, 기본 ACP | Expert: ACP를 용도별로 분리 + 보안 프로토콜 | **가장 큰 구멍.** ACP 설계: 칸(자기 angle·lux 쓰기, command 읽기), 컨트롤러(GRP·command 쓰기, desks 읽기), 대시보드·BMS(읽기 전용), 환경 센서(sun·desks 쓰기). `zone.py`가 AE마다 ACP를 만들고 `CAdmin` 의존 제거. TLS는 tinyIoT가 HTTPS를 지원하는지부터 확인. 카메라 없음·조도만 수집이 프라이버시 서술 (Week 2~3, 중) |
+| **Security and Privacy** | ~~Emerging~~ → 10-07 역할별 ACP 분리(0-4g), 남은 것: TLS | Expert: ACP를 용도별로 분리 + 보안 프로토콜 | **가장 큰 구멍.** ACP 설계: 칸(자기 angle·lux 쓰기, command 읽기), 컨트롤러(GRP·command 쓰기, desks 읽기), 대시보드·BMS(읽기 전용), 환경 센서(sun·desks 쓰기). `zone.py`가 AE마다 ACP를 만들고 `CAdmin` 의존 제거. TLS는 tinyIoT가 HTTPS를 지원하는지부터 확인. 카메라 없음·조도만 수집이 프라이버시 서술 (Week 2~3, 중) |
 | **Data Interoperability** | **Emerging**: CIN `con`에 JSON 문자열(불투명), 라벨 없음 | Proficient~Expert | 칸 상태를 **FlexContainer**(예: `angle`·`lux` 속성)로, 라벨(`lbl`)과 필터 검색(`fu=1`)으로 칸·책상 발견. 여력 되면 SDT(TS-0023)·SAREF 매핑 (Week 3, 중) |
 | CSE Handover & Service Continuity | 없음 | Proficient | 구역 MN이 죽으면 칸이 다른 MN에 다시 등록하고 구독을 복원, 중단 시간·유실 측정. 계획서 Week 6 장애 테스트와 합침 (선택, 중) |
 | oneM2M–MEC Application/VM Deployment | 로컬 Mp1 mock 계획 | Proficient~Expert | 킥오프에서 ESTIMED VM·MEC Sandbox 확인. 컨트롤러를 Docker MEC 앱으로 옮겨 Mp1 등록, 배포 절차 문서화 (Week 6) |

@@ -16,7 +16,7 @@ import numpy as np
 from . import ai, evaluate
 from .onem2m import Client
 from .physics import DESK_MIN_LUX, KST, Room, simulate, sun_position
-from .zone import Controller, Zone
+from .zone import Controller, Zone, roles
 
 
 def run_day(zone, ctl, day, controller, cloud, step_min):
@@ -44,6 +44,21 @@ def run_day(zone, ctl, day, controller, cloud, step_min):
     return {"glare_h": glare_h, "dark_h": dark_h, "mean_lux": lux_sum / steps, "moves": int(zone.moves)}
 
 
+def check_acp(client, run):
+    """Each role gets exactly its rights: a cell cannot touch another cell, the viewer cannot write."""
+    view = roles(run)["view"]
+    client.post("", view, {"m2m:ae": {"rn": f"{run}view", "api": "Npolagrid", "rr": False, "srv": ["3"]}}, 2)
+    cin = {"m2m:cin": {"con": "{}"}}
+    got = {"cell p1 -> p0/angle": client.code("POST", f"{run}p0/angle", f"C{run}p1", cin, 4),
+           "viewer -> env/desks": client.code("POST", f"{run}env/desks", view, cin, 4),
+           "viewer reads env/sun": client.code("GET", f"{run}env/sun", view),
+           "viewer reads p0/angle": client.code("GET", f"{run}p0/angle", view)}
+    want = {"cell p1 -> p0/angle": 403, "viewer -> env/desks": 403, "viewer reads env/sun": 200,
+            "viewer reads p0/angle": 200}
+    print("[acp] " + ", ".join(f"{k}={v}" for k, v in got.items()))
+    assert got == want, f"access control differs: want {want}"
+
+
 def pct(v, p):
     v = sorted(v)
     return v[min(len(v) - 1, int(len(v) * p))]
@@ -69,8 +84,9 @@ def main():
     client = Client(a.host, a.cse)
     zone, ctl = Zone(client, room, run, a.port), Controller(client, run, a.port + 1)
     zone.setup()
-    ctl.setup()
+    ctl.setup(room.n_cells)
     print(f"[setup] {room.n_cells} cells on {a.cse}, run {run}")
+    check_acp(client, run)
 
     if a.controller == "probe":
         make = lambda: evaluate.polagrid_probe(room.n_cells, a.probe)

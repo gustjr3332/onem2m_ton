@@ -9,6 +9,7 @@ import pytest
 
 from polagrid.onem2m import Client
 from polagrid.physics import KST, Room, simulate
+from polagrid.closed_loop import check_acp
 from polagrid.zone import Controller, Zone
 
 CSE = os.environ.get("POLAGRID_CSE")
@@ -23,7 +24,7 @@ def loop():
     client = Client(host, cse)
     zone, ctl = Zone(client, room, run, 9600, noise=0), Controller(client, run, 9601)
     zone.setup()
-    ctl.setup()
+    ctl.setup(room.n_cells)
     yield room, zone, ctl
     zone.rx.stop()
     ctl.rx.stop()
@@ -39,3 +40,8 @@ def test_command_reaches_every_cell_and_desk_reading_comes_back(loop):
         assert np.allclose(zone.angles, angles, atol=0.1)
         assert np.allclose(reading["desk_lux"], simulate(room, t, angles)["desk_lux"], atol=0.1)
     assert max(ctl.latencies) < 5
+
+
+def test_each_role_gets_only_its_rights(loop):
+    _, zone, _ = loop
+    check_acp(zone.c, zone.run)
