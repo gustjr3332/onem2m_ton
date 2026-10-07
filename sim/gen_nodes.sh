@@ -3,8 +3,8 @@
 # 사용법: ./gen_nodes.sh [N=100] [BASE_PORT=3001]
 set -e
 N=${1:-100}; BASE=${2:-3001}
-SRC=~/tinyIoT/source/server
-BUILD=~/polargrid/.build
+SRC=${SRC:-~/tinyiot_latest/source/server}   # upstream c140495 + 로컬 패치 커밋(브랜치 polagrid)
+BUILD=${BUILD:-~/polargrid/.build_latest}
 OUT=~/polargrid/nodes
 mkdir -p "$OUT"
 if [ ! -d "$BUILD" ]; then cp -r "$SRC" "$BUILD"; fi
@@ -28,6 +28,6 @@ for i in $(seq 1 "$N"); do
   # Makefile이 config.h 의존성을 모르므로, config.h를 쓰는 오브젝트만 지움(sqlite/libcoap은 재사용)
   rm -f *.o resources/*.o websocket/*.o wolfmqtt/*.o server
   make -s -j8 >/dev/null 2>build.err || { echo "build fail $id"; tail -5 build.err; exit 1; }
-  mkdir -p "$OUT/$id"; cp server "$OUT/$id/server"
+  mkdir -p "$OUT/$id"; cp server "$OUT/$id/server"; cp -r sdt_definitions "$OUT/$id/" 2>/dev/null || true
   echo "$id port $port"
 done

@@ -10,7 +10,8 @@ from datetime import date, datetime, timedelta
 import numpy as np
 
 from . import ai
-from .physics import DESK_MIN_LUX, GLARE_LUX, KST, Room, simulate, sun_position, transmission
+from .physics import (DESK_MIN_LUX, GLARE_LUX, KST, Room, light_matrices, simulate, sun_position, transmission,
+                      window_lux)
 
 STEP_MIN = 5
 SUN_ON_WINDOW_LUX = 20_000  # blind baseline closes when outdoor light on the window is above this
@@ -92,6 +93,27 @@ def polagrid_probe(n_cells, probe_every_min=15):
             state["contrib"], state["last"] = ai.estimate_contributions(rows, lux), t
         return ai.decide_angles(state["contrib"], ctx["angles"], glare_lux=GLARE_LUX - GLARE_MARGIN_LUX)
     return controller
+
+
+def teacher_log(room, day, cloud=0.0):
+    """Training data for AI (3) without probing: AI (2) decisions from the exact contribution matrix.
+
+    Same (features, angles) rows as run_day's log, but one light_matrices call per step instead of n + 1 probes.
+    """
+    angles = np.zeros(room.n_cells)
+    log = []
+    t = datetime(day.year, day.month, day.day, 7, tzinfo=KST)
+    for _ in range(12 * 60 // STEP_MIN):
+        alt, az = sun_position(t, room.lat, room.lon)
+        outdoor = window_lux(room, t, cloud)
+        if outdoor > SUN_ON_WINDOW_LUX:
+            direct, diffuse = light_matrices(room, t, cloud)
+            angles = ai.decide_angles(direct + diffuse, angles, glare_lux=GLARE_LUX - GLARE_MARGIN_LUX)
+        else:
+            angles = np.zeros(room.n_cells)
+        log.append((ai.features(t, alt, az, outdoor), angles.copy()))
+        t += timedelta(minutes=STEP_MIN)
+    return log
 
 
 def polagrid_predict(model):

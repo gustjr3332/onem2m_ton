@@ -6,7 +6,7 @@
 사용: python3 tools/hier_test.py --mns 10 --per 100 --rounds 20 --modes edge,in --bg 17
 전제: IN(3000)과 mn001..mnM(3001..)이 떠 있음 (tools/run_in.sh, sim/nodes.sh start M)
 """
-import argparse, json, multiprocessing as mp, random, statistics, threading, time, uuid
+import argparse, json, multiprocessing as mp, random, re, statistics, threading, time, uuid
 from concurrent.futures import ThreadPoolExecutor
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -118,13 +118,26 @@ def main():
     threading.Thread(target=collect, args=(q,), daemon=True).start()
     time.sleep(1)
 
+    # IN은 전달할 때 originator CAdmin을 /tinyiot/CAdmin 으로 바꾼다(TS-0004). 최신 tinyIoT MN은 이것을 관리자로 보지 않아
+    # IN 경유 fopt의 멤버 응답이 전부 4103이 된다. 구역마다 ACP를 만들어 command CNT와 GRP에 붙인다.
+    acp = {}
+    for z in range(1, a.mns + 1):
+        host, cse, _ = mn(z)
+        r = post(f"{host}/{cse}", "CAdmin", {"m2m:acp": {"rn": f"{a.run}acp", "pv": {"acr": [
+            {"acor": ["CAdmin", "/tinyiot/CAdmin", f"C{a.run}z{z}p*"], "acop": 63}]},
+            "pvs": {"acr": [{"acor": ["CAdmin"], "acop": 63}]}}}, 1)
+        if r.status_code != 201:
+            print(f"[acp] mn{z:03d} {r.status_code} {r.text[:150]}")
+            return
+        acp[z] = r.json()["m2m:acp"]["ri"]
+
     def setup(zp):
         z, i = zp
         host, cse, _ = mn(z)
         rn, orig = f"{a.run}p{i}", f"C{a.run}z{z}p{i}"
         nu = f"http://127.0.0.1:{a.port + z}/z{z}/p{i}"
         rs = [post(f"{host}/{cse}", orig, {"m2m:ae": {"rn": rn, "api": "Npolagrid", "rr": True, "srv": ["3"], "poa": [nu]}}, 2),
-              post(f"{host}/{cse}/{rn}", orig, {"m2m:cnt": {"rn": "command", "mni": 10}}, 3),
+              post(f"{host}/{cse}/{rn}", orig, {"m2m:cnt": {"rn": "command", "mni": 10, "acpi": [acp[z]]}}, 3),
               post(f"{host}/{cse}/{rn}", orig, {"m2m:cnt": {"rn": "lux", "mni": 10}}, 3),
               post(f"{host}/{cse}/{rn}/command", orig, {"m2m:sub": {"rn": "s", "nu": [nu], "enc": {"net": [3]}, "nct": 1}}, 23)]
         bad = [r for r in rs if r.status_code != 201]
@@ -143,7 +156,7 @@ def main():
     for z in zones:
         host, cse, _ = mn(z)
         mids = [r[1] for r in res if r[0] == z]
-        g = post(f"{host}/{cse}", "CAdmin", {"m2m:grp": {"rn": f"{a.run}zone", "mt": 3, "mnm": a.per, "mid": mids}}, 9)
+        g = post(f"{host}/{cse}", "CAdmin", {"m2m:grp": {"rn": f"{a.run}zone", "mt": 3, "mnm": a.per, "mid": mids, "acpi": [acp[z]]}}, 9)
         if g.status_code != 201:
             print(f"[grp] mn{z:03d} {g.status_code} {g.text[:150]}")
             return
@@ -159,7 +172,8 @@ def main():
             host, cse, csi = mn(z)
             url = f"{host}/{cse}/{a.run}zone/fopt" if mode == "edge" else f"{IN_BASE}/~/{csi}/{cse}/{a.run}zone/fopt"
             r = post(url, "CAdmin", body, 4)
-            return r.status_code
+            bad = {m for m in re.findall(r'"rsc":(\d+)', r.text) if m != "2001"}   # 멤버 실패는 바깥 200에 가려진다
+            return f"{r.status_code}" + (f" member-rsc={','.join(sorted(bad))}" if bad else "")
         dones, zone_p95s, miss, codes = [], [], 0, set()
         for k in range(a.rounds):
             cmd = f"{mode}{k}"

@@ -118,6 +118,14 @@ def light_matrices(room: Room, t: datetime, cloud: float = 0.0):
     return direct, diffuse
 
 
+def window_lux(room: Room, t: datetime, cloud: float = 0.0):
+    """Outdoor light falling on the window plane (lux), before the polarizers."""
+    alt, az = sun_position(t, room.lat, room.lon)
+    e_dn, e_dh = outdoor_light(alt, cloud)
+    rel = math.radians(az - room.window_azimuth)
+    return e_dn * max(0.0, math.cos(math.radians(alt)) * math.cos(rel)) + e_dh / 2
+
+
 def simulate(room: Room, t: datetime, angles, cloud: float = 0.0, noise: float = 0.0, rng=None):
     """Sensor readings for one moment. angles: N cell angles in degrees.
 
@@ -128,11 +136,7 @@ def simulate(room: Room, t: datetime, angles, cloud: float = 0.0, noise: float =
     direct, diffuse = light_matrices(room, t, cloud)
     desk_direct = direct @ tr
     desk_lux = desk_direct + diffuse @ tr
-    alt, az = sun_position(t, room.lat, room.lon)
-    e_dn, e_dh = outdoor_light(alt, cloud)
-    a, rel = math.radians(alt), math.radians(az - room.window_azimuth)
-    on_window = e_dn * max(0.0, math.cos(a) * math.cos(rel)) + e_dh / 2
-    cell_lux = tr * on_window
+    cell_lux = tr * window_lux(room, t, cloud)
     if noise:
         rng = rng or np.random.default_rng()
         desk_lux = desk_lux * (1 + rng.normal(0, noise, desk_lux.shape))

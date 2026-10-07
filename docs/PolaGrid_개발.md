@@ -40,13 +40,15 @@
 
 | 주 | 기간 | 할 일 | 완료 기준 |
 |---|---|---|---|
-| 1 | 10/5~11 | 킥오프, 메이커톤 기획안 제출(~10/7), 부품 확인·주문(12칸분), 시제품 재가동 + 각도 vs 조도 10점, 실물 칸 1 oneM2M 연동 | command POST 후 5초 안에 서보 이동 |
-| 2 | 10/12~18 | 실물 칸 2, 태양 모델, **AI ①** 기여도 추정 | 칸 2개의 자리별 기여도 표 출력 |
-| 3 | 10/19~25 | **AI ②** 각도 결정 + baseline 3종, 12칸 창 조립 시작 | 실물 2칸에서 지표 자동 계산 CSV |
-| 4 | 10/26~11/1 | 12칸 설치·실사용 데이터 수집, **AI ③** 회귀 예측 + 앱 보정(모드·슬라이더), 안전 동작 | 12칸이 하루 동안 자동 운전 |
-| 5 | 11/2~8 | **11/5 메이커톤 시연**, 이후 가상 칸 폐루프 시뮬레이터(실물 12 + 가상 88 = 100칸) | 시연 5회 연속 성공 |
-| 6 | 11/9~15 | AI 제어 앱을 MEC 앱으로 이전(Mp1 등록), 1,000 → 10,000칸 스케일 곡선, 장시간 운영 측정, BMS mock | 스케일 곡선 + baseline 비교 수치 |
-| 7 | 11/16~20 | 영어 README·ARCHITECTURE·TUTORIAL, 발표·영상, oneM2M 제출 | 제출 |
+| 1 | 10/5~11 | ~~킥오프~~, ~~메이커톤 기획안 제출~~, ~~Discord 가입~~, 부품 확인·주문(12칸분), 실물 칸 1 각도 vs 조도 10점, 실물 칸 1 oneM2M 연동, **MEC Sandbox(try-mec.etsi.org) MEC011 시험**(0-7b), TR-0077/0078 읽기 | command POST 후 5초 안에 서보 이동, MEC 방식 결정(Sandbox MEC011 / 로컬 mock) |
+| 2 | 10/12~18 | 실물 칸 2, **AI ①** 기여도 추정(+ 운전 데이터 온라인 추정, 0-8 #3), ~~tinyIoT 기반 결정~~(10-07 앞당겨 완료, 0-4f), **ACP 분리 시작**, Discord 멘토 질의 1건(tinyIoT 버그·MEC 배치 옵션) | 칸 2개의 자리별 기여도 표 출력 |
+| 3 | 10/19~25 | **AI ②** 각도 결정 + baseline 3종(실물), 12칸 창 조립 시작, **ACP 분리 완료 + FlexContainer·라벨 검색**(0-7절, `zone.py`) | 실물 2칸에서 지표 자동 계산 CSV, `CAdmin` 없이 폐루프 동작 |
+| 4 | 10/26~11/1 | 12칸 설치·실사용 데이터 수집, **AI ③** 회귀 예측 + 앱 보정(모드·슬라이더) + 100칸 눈부심 원인(0-8 #4), 안전 동작, 실물 ESP32 MQTT | 12칸이 하루 동안 자동 운전 |
+| 5 | 11/2~8 | **11/5 메이커톤 시연**, 이후 실물 12 + 가상 88 = 100칸 폐루프(가상 100칸 v0는 완료, 0-4e) | 시연 5회 연속 성공 |
+| 6 | 11/9~15 | AI 제어 앱을 MEC 앱으로 이전(MEC011 등록, Week 1 결정 방식), 1,000칸 폐루프(MN 10개) → 10,000칸 스케일 곡선, 장시간 운영 측정(DB 누적 저하, 0-4d), BMS mock, 공개 GitHub 정리, **hackster.io 초안**(이전 우승작 구조 참고) | 스케일 곡선 + baseline 비교 수치, hackster.io 초안 |
+| 7 | 11/16~20 | **hackster.io 완성**·README·ARCHITECTURE·TUTORIAL, **데모 영상 5분 미만**, 영어 발표자료 + 30분 심사(발표·Q&A) 준비, oneM2M 제출 | 11/20 제출(hackster.io + GitHub + 영상) |
+
+- 10-07 기준 앞당겨 끝낸 것(소프트웨어): 물리 모델 v0, AI v0 + baseline 비교, 폐루프 v0 12칸·100칸, 1,000칸 계층 측정. 하드웨어(Week 1 나머지 3건)가 밀려 있다.
 
 - 일정이 밀리면 버리는 순서: 대시보드 고도화 → 10,000칸 → BMS mock → 교실 한 층 확장. AI ①~③과 실물 12칸은 메이커톤 시연에 필요하므로 버리지 않는다.
 - 3단계가 2주로 짧다. 1,000칸 계층 측정(0-4d)과 측정 도구(0-5)를 이미 확보해 둔 것이 근거다.
@@ -137,6 +139,8 @@
 
 ### 0-4d. 1,000칸 계층 측정 (2026-10-01, 같은 PC·WSL, 원본 `results/scale_curve_tinyiot_1001.txt`)
 
+> **10-06 주의**: 아래 표는 동시 요청에서 죽을 수 있던 바이너리(직렬화 패치 전)로 잰 값이다. 패치 후 재측정은 0-4e에 있다(엣지 직접 p50 734 ms, p95 2,996 ms).
+
 MN-CSE M개 × 칸 100개, 구역(MN)마다 GRP 1개, 칸마다 command CNT + SUB. 명령 1회 = M개 구역에 동시에 GRP fopt → 모든 칸에 알림이 도착할 때까지. 10회, 단계마다 새 DB, 알림 수신기는 구역별 별도 프로세스(`tools/hier_test.py`, `tools/run_scale_curve.sh`).
 
 | MN × 칸 | 엣지에서 직접 (p50 / p95) | IN 경유 (p50 / p95) | 시스템 CPU 평균 / 최대 |
@@ -154,6 +158,74 @@ MN-CSE M개 × 칸 100개, 구역(MN)마다 GRP 1개, 칸마다 command CNT + SU
 - 처음엔 측정 클라이언트(파이썬 한 프로세스) 병목을 의심해 수신기를 구역별 프로세스로 나눴으나, 오래된 DB에서는 오히려 느려졌다(`results/hier_tinyiot_1001_singleproc.txt`). 결론을 가른 건 DB 상태였다.
 - IN 경유 fopt가 오래된 DB에서 가끔 404를 돌려주면서도 실제 전달은 됨(새 DB에서는 200). 원인 미확인.
 
+### 0-4e. 폐루프 측정 (2026-10-06, 같은 PC·WSL, 원본 `results/closed_loop_1006.txt`)
+
+가상 칸(`polagrid/zone.py`)과 구역 컨트롤러(MEC 앱, 같은 파일)가 **MN-CSE를 통해서만** 통신한다. 칸마다 AE(command·angle CNT, command에 SUB), 구역 GRP 1개, 환경 AE(sun·desks CNT). 명령 1회 = 구역 GRP fopt로 CIN `{cmd, angles[전 칸]}` 1건 → 각 칸이 자기 각도를 읽어 적용·angle CIN 기록 → 모든 칸이 적용하면 책상 센서가 같은 `cmd`로 조도 CIN 보고 → 컨트롤러가 SUB로 받음. 같은 날(11/5, 맑음)을 CSE 경유와 물리 모델 직접 계산으로 각각 돌려 비교했다.
+
+| 구성 | 컨트롤러 | 명령 수 | 명령 → 책상 조도 수신 (p50 / p95 / max) | 눈부심 h (CSE / 직접) | 서보 이동 (CSE / 직접) |
+|---|---|---|---|---|---|
+| 12칸 | AI ①+② 탐색 | 510 | 28 / 48 / 81 ms | 0.25 / 0.33 | 1129 / 1096 |
+| 12칸 | AI ③ 예측 | 89 | 19 / 28 / 42 ms | 0.00 / 0.00 | 227 / 223 |
+| **100칸** | AI ③ 예측 | 125 | **512 / 843 / 1,131 ms** | 1.25 / 1.25 | 1365 / 1366 |
+
+- 폐루프가 CSE를 거쳐도 제어 결과가 직접 계산과 같다(차이는 센서 잡음 난수). 100칸 지연은 통과 기준(p95 ≤ 5s)보다 훨씬 짧다. 지연에는 칸 알림 100건 + angle CIN 100건 + 책상 CIN 1건 처리가 모두 들어 있다.
+- **AI ①(칸 탐색)은 100칸에서 쓸 수 없다.** 탐색 1회 = 명령 101번 × (알림 100 + angle CIN 100). 하루를 시뮬레이션하다 20분 만에 CIN 약 67,000건에서 중단(처리량 66 → 33 req/s로 하락, MN CPU 100%). 칸 수에 대해 O(N²). 100칸은 AI ③(예측)로 운전하고, ①은 설치 때 1회 또는 소수 칸 구역에서만 쓴다. 평상시 운전 데이터에서 기여도를 온라인으로 추정하는 방법이 다음 과제.
+- 100칸 AI ③은 30일 학습에서 눈부심 1.25 h로 12칸(0 h)보다 나쁘다. 칸이 늘면 학습 데이터가 더 필요한 것으로 보이나 원인 확인 전. 교사 데이터는 탐색 없이 정확한 기여도 행렬로 만든 ② 결정(`evaluate.teacher_log`).
+- 한계: 1회 측정, 클라이언트·CSE 같은 PC, 칸의 서보 이동 시간은 모델에 없음(명령 즉시 적용).
+
+**이 과정에서 tinyIoT 버그 2건을 더 찾아 패치함** (`sim/README.md` 5·6번, `sim/patches/`):
+- 동시 요청에서 MN이 segfault(12칸 폐루프에서 8회 중 4회). 원인은 리소스 트리 읽기(fopt)와 CIN 생성이 겹치는 경합(`serialize-requests.patch`: `route()`를 뮤텍스로 직렬화, 10회 연속 정상).
+- GRP fopt 응답이 64KB를 넘으면 잘림(`large-response.patch`). 칸 100개에 명령 `con` 700바이트이면 약 88KB.
+- **직렬화의 비용**(같은 PC, 새 DB, 1회): 운영 처리량 577 → 295 req/s(`results/bench_tinyiot_mn_serialize_1006.txt`). 1,000칸 계층 명령은 아래처럼 느려졌다(`results/scale_curve_tinyiot_1006.txt`).
+
+| MN × 칸 | 엣지 직접 p50 / p95 (10-01 → 10-06) | IN 경유 p50 / p95 (10-01 → 10-06) |
+|---|---|---|
+| 1 × 100 | 95 / 154 → 164 / 466 ms | 187 / 207 → 319 / 429 ms |
+| 5 × 100 | 187 / 269 → 227 / 295 ms | 369 / 438 → 603 / 2,805 ms |
+| **10 × 100** | **349 / 382 → 734 / 2,996 ms** | **676 / 801 → 733 / 882 ms** |
+
+  p95는 10회 중 최댓값이라 한 번 튄 값이다(엣지 직접 2,996 ms, IN 경유 5×100 2,805 ms). 통과 기준 5초 안이지만 여유가 줄었다. 락 범위를 줄이면(트리를 바꾸는 구간만) 되돌릴 수 있을지 확인 필요. **발표·기획안의 "엣지 0.38초 / IN 경유 0.80초"는 직렬화 패치 전 수치다**(패치 전 바이너리는 동시 요청에서 죽을 수 있었음). → 10-07 최신 기반 재측정으로 대체(0-4f).
+
+### 0-4f. tinyIoT 최신 커밋 이전 + 전체 재측정 (2026-10-07, 같은 PC·WSL, 원본 `results/*_1007.txt`)
+
+**기반을 4월 `832205f` → upstream 최신 `c140495`로 옮겼다**(123커밋 앞섬, 10-07 기준 여전히 최신). `~/tinyiot_latest` 로컬 브랜치 `polagrid`에 패치 4개 + config를 커밋 1개로 두고 push URL은 `DISABLED`로 막았다. 4월 노드는 `~/polargrid/nodes_832205f`에 보관. 구성 상세는 `sim/README.md`, 버그 재확인은 `sim/TINYIOT_BUG_REPORTS.md`(10-07 절).
+
+- 패치: fopt 알림(3번)·GRP 버퍼 넘침(4번)·WAL·요청 직렬화(6번)는 다시 적용. 콤마 누락(1번)·큰 응답 잘림(5번)은 upstream에서 고쳐져 뺐다.
+- 6번(동시 요청 크래시)은 최신에도 있다: 직렬화 패치 없이 50칸 동시 쓰기에서 CIN 약 27,700건 후 MN이 로그 없이 죽음. 패치하면 12칸·50칸 모두 100회 무사.
+- 최신 코드는 MQTT 웹소켓이 기본으로 켜져 있어 mosquitto에 웹소켓 리스너가 없으면 IN이 바로 종료된다 → `ENABLE_MQTT_WEBSOCKET` 끔.
+- **IN은 SQLite로 바꿨다**(PostgreSQL에 새 DB를 만들 권한 없음). 10-06까지 IN은 PostgreSQL이라 IN 경유 수치는 조건이 다르다.
+- **IN 경유 명령이 0건 도착하던 원인**: IN은 전달할 때 originator `CAdmin`을 `/tinyiot/CAdmin`으로 바꾼다(표준 동작, 4월 코드도 같음). 최신 MN은 이를 관리자로 보지 않아 칸마다 4103이 났고, fopt 바깥 응답은 200이라 가려졌다. **MN에 `/tinyiot/CAdmin` + 칸 originator(와일드카드 `C<run>z<구역>p*`)를 허용하는 ACP를 command CNT와 GRP에 붙여 해결**(`tools/hier_test.py`). ACP 분리(0-7) 설계 조건: IN 쪽 앱 originator는 MN ACP에 따로 넣어야 한다.
+- **IN에서는 직렬화 락을 뺐다**(`~/polargrid/in_nolock`, 4월 구성도 패치는 MN에만 있었음). 락이 있으면 IN이 구역 fopt를 한 줄로 전달해 10구역 IN 경유가 p50 1,798 / p95 4,741 ms까지 늘었다. 락을 빼니 565 / 634 ms.
+
+MN 1개 성능(새 DB, 1회, 클라이언트·CSE 같은 PC):
+
+| 항목 | 10-01 (4월, 패치 전) | 10-06 (4월 + 직렬화) | **10-07 (최신 + 직렬화)** |
+|---|---|---|---|
+| 운영 처리량, 칸마다 AE | 577 req/s | 295 req/s | **458 req/s** (CIN p95 63 ms) |
+| 운영 처리량, zone마다 AE | 190 req/s | – | 189 req/s |
+| 100칸 GRP fan-out → 모든 칸 알림 p50 / p95 | 106 / 151 ms | – | 125 / 231 ms, 누락 0 |
+| 100칸 개별 POST(동시 20) p50 / p95 | 1,086 / 2,125 ms | – | 257 / 330 ms |
+
+계층 측정 곡선(MN M개 × 100칸, 10회, 단계마다 새 DB, ACP 적용, IN 락 없음, `results/scale_curve_tinyiot_1007.txt` 마지막 블록):
+
+| MN × 칸 | 엣지 직접 p50 / p95 | IN 경유 p50 / p95 | 10-06 엣지 / IN p95 | 알림 누락 |
+|---|---|---|---|---|
+| 1 × 100 | 100 / 136 ms | 181 / 250 ms | 466 / 429 ms | 0 |
+| 2 × 100 | 85 / 103 ms | 171 / 189 ms | – | 0 |
+| 5 × 100 | 151 / 199 ms | 292 / 369 ms | 295 / 2,805 ms | 0 |
+| **10 × 100 = 1,000칸** | **267 / 344 ms** | **565 / 634 ms** | 2,996 / 882 ms | 0 / 10,000 |
+
+- **1,000칸 통과 기준(p95 ≤ 5s) 통과, 여유 회복.** 직렬화 패치를 유지한 채로 엣지 직접 p95 344 ms, IN 경유 634 ms. 패치 전 4월 수치(382 / 801 ms)와 비슷하거나 낫다 → **발표·기사 수치는 이 표로 바꾼다**(0-8 #2).
+- IN 경유는 엣지 직접의 약 2배(0-4d와 같은 결론).
+
+폐루프(`results/closed_loop_1007.txt`, MN 1개 새 DB): 결과는 10-06과 같다(CSE 경유 = 직접 계산).
+
+| 구성 | 명령 → 책상 조도 p50 / p95 / max | 눈부심 h (CSE / 직접) | 10-06 p50 / p95 |
+|---|---|---|---|
+| 12칸 AI ①+② | 26 / 42 / 88 ms | 0.25 / 0.33 | 28 / 48 ms |
+| 12칸 AI ③ | 17 / 26 / 31 ms | 0.00 / 0.00 | 19 / 28 ms |
+| 100칸 AI ③ | 580 / 815 / 984 ms | 1.25 / 1.25 | 512 / 843 ms |
+
 ### 0-5. 측정 도구 (`tools/`)
 
 | 파일 | 내용 |
@@ -165,6 +237,9 @@ MN-CSE M개 × 칸 100개, 구역(MN)마다 GRP 1개, 칸마다 command CNT + SU
 | `tools/fanout_test.py`, `tools/run_fanout.sh` | 구역 명령 전달 지연: GRP fan-out vs 개별 POST, SUB 알림 도착까지 |
 | `tools/run_disk_mn.sh`, `tools/run_tmpfs_mn.sh`, `tools/run_in.sh` | mn001을 디스크/tmpfs에서 다시 띄우기(진단용), IN 띄우기 |
 | `tools/hier_test.py`, `tools/run_hier.sh`, `tools/run_scale_curve.sh` | 계층 측정: MN M개 × 칸 P개, 엣지 직접 vs IN 경유, 배경 부하, 단계별 새 DB + CPU 기록 |
+| `tools/fresh_mn.sh` | MN을 새 DB로 다시 띄움(기존 DB는 `~/polargrid/db_backup/`로 이동) |
+| `tools/run_suite_latest.sh` | tinyIoT 기반을 바꾼 뒤 전체 재측정: 버그 재현 3·6번 → MN 처리량 → 구역 명령 전달 → 계층 곡선 → 폐루프 3종 |
+| `polagrid/closed_loop.py` | 폐루프 실행: 가상 칸 + 컨트롤러가 MN-CSE 경유로 하루 시뮬레이션, 직접 계산과 비교, 명령 지연 (WSL에서 `python3 -m polagrid.closed_loop`) |
 
 알려진 함정:
 - AE를 모두 같은 originator로 등록하면 403이 난다. AE마다 고유 originator를 쓴다.
@@ -172,35 +247,84 @@ MN-CSE M개 × 칸 100개, 구역(MN)마다 GRP 1개, 칸마다 command CNT + SU
 
 ### 0-6. 다음 할 일
 
-0-0절 일정 기준. 지금(Week 1) 할 것:
-1. 메이커톤 기획안 제출 확인(마감 10/7, 기간 외 접수 불가).
-2. 부품 확인·주문, **12칸분**: 서보 12, 편광 필름 24장, 조도센서(칸별 12 + 책상 2~3), ESP32 1~2, 서보 드라이버(16채널 PWM) 1. BH1750은 I2C 주소가 2개뿐이라 칸마다 붙이려면 I2C 멀티플렉서가 필요하다(또는 아날로그 조도센서). 가격 미확인.
-3. 기존 시제품 재가동, 각도 vs 조도 10점 실측(Malus cos² 보정, AI ② 입력).
-4. 실물 칸 1을 tinyIoT MN에 연결(WSL mirrored 네트워킹 또는 포트 프록시).
+남은 작업 전체(10-07 정리). 주차는 0-0절 표와 같다.
 
-3단계(Week 5~6)로 미룬 것:
-- 자원이 쌓인 DB에서 10~20배 느려지는 원인(장시간 운영 측정, 인계 메모 `C:\Users\gustj\AppData\Local\Temp\polagrid_handoff_longrun.md`), MN을 여러 기기에 나눈 측정, `mni` 제한 영향.
-- 폐루프 시뮬레이터: 태양 모델 + 명령 수신 + 조도 재계산.
+**Week 1 남은 것 (10/7~11, 하드웨어 — 이번 주 최우선)**
+1. 부품 확인·주문, **12칸분**: 서보 12, 편광 필름 24장, 조도센서(칸별 12 + 책상 2~3), ESP32 1~2, 서보 드라이버(16채널 PWM) 1. BH1750은 I2C 주소가 2개뿐이라 칸마다 붙이려면 I2C 멀티플렉서가 필요하다(또는 아날로그 조도센서). 가격 미확인. 배송 기간이 12칸 조립(Week 3)을 좌우한다.
+2. 실물 칸 1로 각도 vs 조도 10점 실측(Malus cos² 보정, AI ② 입력).
+3. 실물 칸 1을 tinyIoT MN에 연결(WSL mirrored 네트워킹 또는 포트 프록시).
+4. **MEC Sandbox 확인(진행 중)**: try-mec.etsi.org에서 MEC011로 `polagrid-daylight` 서비스 등록·조회가 되는지 → 되면 Mp1 mock은 만들지 않음, 안 되면 로컬 mock(0-7b).
+5. TR-0077(oneM2M–MEC 통합, 배치 옵션 A~D)·TR-0078(개발자 가이드) 읽고 우리 구조가 어느 옵션인지, Handover·MEC 서비스 점수 받는 법 정리.
+6. ~~Discord 가입~~(10-07). Discord 내용은 MCP로 못 가져옴(봇은 서버 관리자가 초대해야 함, 사용자 토큰 자동화는 약관 위반) → 필요하면 Claude in Chrome으로 웹 Discord 읽기 또는 붙여넣기.
 
-소프트웨어 먼저 진행(10-05, 하드웨어 제작은 보류):
-- [x] 가상 물리 모델 v0 `polagrid/physics.py` + 테스트 `tests/test_physics.py`(9개 통과). 태양 위치(NOAA), 맑은 하늘 조도, 말뤼스 투과, 칸→책상 직사·확산 조도 행렬(투과율에 선형). 수치는 가정값이라 실물 실측으로 교체 예정.
-- [x] AI v0 `polagrid/ai.py`(① nnls 기여도 추정, ② linprog 각도 결정, ③ HistGradientBoosting 각도 예측 + Ridge 사용자 보정) + 비교 `polagrid/evaluate.py`, 테스트 16개 통과. 결과 `results/ai_compare_1005.txt`(가상 물리 모델, 학습 60일·시험 20일, 하루 평균, 책상 2개 합):
+**Week 2~4 소프트웨어 (부품 기다리는 동안)**
+- [x] tinyIoT 기반 결정: 최신 `c140495`로 이전, 패치 4개 재적용, 전체 재측정(10-07, 0-4f).
+- [x] 직렬화 락 영향: 최신 기반에서 처리량 458 req/s, 1,000칸 엣지 p95 344 ms로 회복. IN은 락 없이 운영. 락 범위 축소는 필요할 때만(0-8 #1).
+- [ ] ACP 분리(Week 2~3) → FlexContainer + 라벨 검색(Week 3). 루브릭 최대 구멍(0-7). IN 쪽 앱 originator(`/tinyiot/...`)를 MN ACP에 넣어야 한다(0-4f).
+- [ ] IN을 PostgreSQL로 되돌릴지: `sudo -u postgres createdb -O tinyuser tinydb_latest` 실행 후 IN 경유 재측정(사람만 가능).
+- [ ] AI ① 운전 데이터 온라인 추정(Week 2, 0-8 #3).
+- [ ] AI ③ 개선(Week 4): 12칸 눈부심 0.24 h(`ai_compare_1005`) → ①+② 수준(0.06 h), 100칸 1.25 h 원인(0-8 #4), 사용자 보정 시나리오 비교 추가.
+- [ ] 실물 ESP32를 MQTT로(Week 4, 루브릭 Communication Expert).
 
-  | 방식 | 눈부심 h | 조도 부족 h | 평균 lux | 서보 이동 |
-  |---|---|---|---|---|
-  | B0 고정 개방 | 2.26 | 16.27 | 1100 | 0 |
-  | B1 블라인드형 | 0.00 | 21.24 | 93 | 24 |
-  | B2 시간 예약 | 0.34 | 19.64 | 246 | 24 |
-  | 통계 룩업 표 | 0.56 | 16.42 | 417 | 59 |
-  | AI ①+② (15분마다 칸 탐색) | 0.06 | 16.71 | 346 | 851 |
-  | AI ③ 예측 (탐색 없음) | 0.24 | 16.47 | 379 | 136 |
+**대회 제출 준비 (0-7b)**
+- [ ] Discord 멘토 질의(Week 2): tinyIoT 담당 멘토에게 버그 6건 공유 여부 결정(0-8 #5), MEC 담당 멘토에게 배치 옵션 확인.
+- [ ] Release 5 AI 기능 조사: 대회 목표의 "oneM2M R5·ETSI MEC 표준화 AI 기능" 중 PolaGrid AI에 붙일 것이 있는지(Week 2~3).
+- [ ] hackster.io 계정 + 이전 우승작 문서 구조 확인 → 초안 뼈대(Week 6).
+- [ ] 데모 영상 5분 미만 대본(실물 2칸 → 12칸 → 100칸 → 1,000칸 → 외부 앱)(Week 7).
+- [ ] 영어 발표자료 + 30분 심사 Q&A 예상 질문(Week 7).
 
-  - 조도 부족 시간의 약 12 h는 창에서 2 m 떨어진 책상 B 몫(열어도 100 lux 미만). 반사광을 넣지 않은 모델 한계.
-  - ①+②는 눈부심이 가장 적지만 탐색 때문에 서보가 하루 851번 움직인다. ③이 이를 136번으로 줄인다. 실물에서 탐색 깜빡임을 줄이는 방법(평소 운전 데이터로 온라인 추정)은 다음 과제.
-- [ ] AI ③ 개선: 눈부심 0.24 h → ①+② 수준, 사용자 보정 시나리오를 비교에 넣기
-- [ ] 칸 프로그램을 tinyIoT에 붙인 폐루프 → 100 → 1,000칸
+**Week 5~7**
+- 11/5 시연 → 실물 12 + 가상 88 폐루프 → MEC 앱 이전(Mp1) → 1,000칸 폐루프(MN 10) → 10,000칸 → 장시간 운영(DB 누적 저하 원인, 인계 메모 `C:\Users\gustj\AppData\Local\Temp\polagrid_handoff_longrun.md`, MN 분산 측정, `mni` 영향) → BMS mock → 영어 기사·저장소·영상 → 11/20 제출.
 
-완료: tinyIoT 벤치마크(0-4c), GRP 재시작 크래시 패치(`sim/README.md` 4번), 1,000칸 계층 측정 통과(0-4d).
+**보류**: tinyIoT 버그 보고·Judge points 방침(0-8 #5), CSE Handover·FL·AI 에이전트(0-7, 먼저 버림).
+
+완료: 킥오프(10/5), 메이커톤 기획안 제출(10/7), tinyIoT 최신 커밋 이전 + 전체 재측정(10/7, 0-4f), 가상 물리 모델 v0(`polagrid/physics.py`), AI v0 + baseline 비교(`results/ai_compare_1005.txt`), 폐루프 v0 12칸·100칸(0-4e), tinyIoT 벤치마크(0-4c), GRP 재시작 크래시 패치(`sim/README.md` 4번), 1,000칸 계층 측정 통과(0-4d), tinyIoT 버그 6건 정리(`sim/TINYIOT_BUG_REPORTS.md`).
+
+### 0-7. 평가 기준(Hackathon Rubric 2026, `docs/Hackathon Rubric 2026.pdf`) 대응 — 10-06
+
+점수는 항목마다 Expert(4-5) / Proficient(2-3) / Emerging(0-1). 아래는 PolaGrid의 현재 위치와 올릴 방법이다. tinyIoT는 ACP·FCNT·TS/TSI·PCH·SMD(시맨틱)·SDT·announcement·CRS·MQTT(TLS 옵션)를 지원하는 것을 `.build` 소스에서 확인했다(HTTPS 옵션은 config에서 못 찾음).
+
+| 평가 항목 | 지금 | 목표 | 할 일 (비용) |
+|---|---|---|---|
+| Innovative use of oneM2M | **GRP fan-out + SUB 알림**(구역 명령 1건 → 칸 전체), `mni` 사용. Expert 조건(group) 충족 | 유지 + 복합 속성 | 칸 lux를 TimeSeries로, 구독 `expirationCounter`·batch 알림 시험 (Week 3, 소) |
+| Communication protocols | 폐루프 전부 HTTP. MQTT는 IN↔MN 연결만 확인 | **Expert**: 장치와 앱이 다른 프로토콜 | 실물 ESP32는 MQTT(저전력·상시 연결), 대시보드·BMS·컨트롤러는 HTTP. 선택 이유를 문서에 적기 (실물 단계, 소) |
+| Innovative scenarios | 장치(칸) → CSE → 컨트롤러·대시보드·BMS mock 여러 앱, 폴링 대신 SUB·GRP | Expert 유지 | 대시보드·BMS mock 구현 (Week 5~6). "oneM2M 서비스 기능을 장치·앱에 구현하지 않았다" 사례로 서술: 그룹 명령, 구독, 이력 보존(mni) |
+| **Security and Privacy** | **Emerging**: 모든 요청이 `CAdmin` 하나, 기본 ACP | Expert: ACP를 용도별로 분리 + 보안 프로토콜 | **가장 큰 구멍.** ACP 설계: 칸(자기 angle·lux 쓰기, command 읽기), 컨트롤러(GRP·command 쓰기, desks 읽기), 대시보드·BMS(읽기 전용), 환경 센서(sun·desks 쓰기). `zone.py`가 AE마다 ACP를 만들고 `CAdmin` 의존 제거. TLS는 tinyIoT가 HTTPS를 지원하는지부터 확인. 카메라 없음·조도만 수집이 프라이버시 서술 (Week 2~3, 중) |
+| **Data Interoperability** | **Emerging**: CIN `con`에 JSON 문자열(불투명), 라벨 없음 | Proficient~Expert | 칸 상태를 **FlexContainer**(예: `angle`·`lux` 속성)로, 라벨(`lbl`)과 필터 검색(`fu=1`)으로 칸·책상 발견. 여력 되면 SDT(TS-0023)·SAREF 매핑 (Week 3, 중) |
+| CSE Handover & Service Continuity | 없음 | Proficient | 구역 MN이 죽으면 칸이 다른 MN에 다시 등록하고 구독을 복원, 중단 시간·유실 측정. 계획서 Week 6 장애 테스트와 합침 (선택, 중) |
+| oneM2M–MEC Application/VM Deployment | 로컬 Mp1 mock 계획 | Proficient~Expert | 킥오프에서 ESTIMED VM·MEC Sandbox 확인. 컨트롤러를 Docker MEC 앱으로 옮겨 Mp1 등록, 배포 절차 문서화 (Week 6) |
+| MEC Services | 없음 | Proficient | MEC 서비스 1개(위치 외)를 oneM2M으로 쓰기. 킥오프 확인 후 결정 |
+| Federated Learning | 없음 | 선택 | AI ③을 구역마다 따로 학습하고 모델만 모으면 "데이터는 로컬에" 서술과 맞음. 일정이 되면 확장, 먼저 버림 |
+| Geolocation Services | 해당 없음(고정 설치) | 포기 | – |
+| AI Agents & MCP | 없음 | 선택 | LLM 에이전트가 MCP로 oneM2M을 조회·명령(예: "3번 책상 눈부심 줄여줘"). 가산점용, 먼저 버림 |
+| Quality of Article | – | Expert | 영어 기사: 시스템·하드웨어·**리소스 트리 그림**·프로토콜 사용·측정 결과·oneM2M 이점. 0-4c~0-4e 표가 재료 (Week 7) |
+| Quality of Video | 영어 소개영상 있음 | Proficient+ | 실물 2칸 반응 → 100칸 → 1,000칸 → 외부 앱 재사용. 시뮬레이션도 props로 인정 (Week 7) |
+| Quality of Github | 개발 문서·측정 도구·패치 | Expert | 단독 저장소로 정리, 영어 README·ARCHITECTURE·TUTORIAL, `docker compose up` 5분 내 첫 CIN, 기사 링크. 한국어 문서·`EDGE_PDM_B/`·`archive/` 분리 (Week 6) |
+| Promotion of oneM2M | – | Expert | 기사·README 전체에서 oneM2M 자원 링크, 규격 번호 인용 |
+| Judge points | 없음 | Proficient+ | 공개 포럼(Slack·GitHub)에서의 질의·토론이 점수. **방침 확인 필요**(0-8절 5번) |
+| Interview points | – | Expert | 리소스 트리 설명 + "왜 oneM2M인가" 준비: 그룹·구독·이력·권한을 플랫폼이 해 줘서 칸 프로그램은 각도만 적용하면 된다 |
+
+우선순위(1인, 비용 대비 점수): ① ACP 분리 ② FlexContainer + 라벨 검색 ③ 실물 MQTT ④ 영어 기사·저장소·영상. FL·AI 에이전트·Geolocation은 먼저 버린다. 0-0절의 일정에는 ①②를 Week 3에 넣는다(폐루프 코드 `polagrid/zone.py` 수정).
+
+### 0-7b. 대회 개요 자료(`2026 hackathon overview_v2.3.pdf`, 10/5 킥오프)에서 확인한 것 — 10-07
+
+- **제출물(11/20)**: ① **hackster.io 프로젝트 페이지**(문제·해결, 쓴 oneM2M 기능 설명, 장치·소프트웨어·시뮬레이터 설명. 0-7의 "영어 기사"가 이것) ② 공개 GitHub 저장소 ③ **데모 영상 5분 미만**(소개영상 30초와 별개).
+- **심사**: 팀마다 **30분 세션**(발표 + 질의응답). 0-7의 Interview points가 이것.
+- **소통은 Discord**(초대 예정): 공지·멘토링·공개/비공개 질의. Judge points(공개 활동)의 무대로 보인다.
+- **멘토에 tinyIoT 담당(JaeSeung Song)**, oneM2M–MEC 개발자 가이드 저자(Kaleb Gebremeskel)가 있다 → tinyIoT 버그 6건은 git이 아니라 Discord 멘토 질의로 알릴 수 있다(git 배포 금지 규칙과 충돌 없음, 결정은 보류 중인 0-8 #5).
+- **MEC 환경 = ETSI MEC Sandbox**(오픈소스, AdvantEDGE 기반). 온라인판 [try-mec.etsi.org](https://try-mec.etsi.org)에서 MEC011(앱 활성화·서비스 등록·발견) 등 MEC API를 Swagger로 써 볼 수 있다. → 자체 Mp1 mock 대신 Sandbox의 MEC011을 쓰는 쪽을 먼저 확인. Sandbox README 기준 지원 API에 **MEC033(MEC IoT API: IoT 플랫폼·장치 등록)**과 MEC046(센서 공유)이 있다 → tinyIoT CSE를 MEC033에 IoT 플랫폼으로 등록하면 "oneM2M–MEC 연동"과 "MEC Services" 점수 근거가 될 수 있다(실제 동작 미확인).
+- **참고 규격**: 루브릭 항목에 TR-0077(oneM2M–MEC 통합 시나리오: 배치 옵션 A~D, Handover, FL), TR-0086(VM 배포), TR-0084(FL)가 걸려 있다. 개발자 가이드는 TR-0078. 대회 목표 문구에 "oneM2M Release 5와 ETSI MEC에서 표준화 중인 AI 기능을 활용한 AIoT"가 있다(무엇을 쓸 수 있는지 미확인).
+- **경쟁**: 32팀·9개국, 한국 16팀. 비슷한 주제는 openSoom(실내 공기 환기), 2025 Nexus(건물 에너지 AI 에이전트). 차별점은 **실물 + 1,000칸 실측 스케일 곡선**.
+
+### 0-8. 열린 문제 정리 (10-06)
+
+1. ~~직렬화 패치로 느려짐~~ → **10-07 해결**(0-4f): 최신 기반에서 처리량 295 → 458 req/s, 1,000칸 엣지 p95 2,996 → 344 ms. 남은 비용은 칸마다 AE 처리량(577 → 458). 락 범위 축소는 10,000칸에서 부족할 때 다시 본다.
+2. **제출·발표 수치가 패치 전 값**: 메이커톤 기획안(0.38초·0.80초·초당 577건)과 킥오프 Q&A PDF(Q5·Q6)가 직렬화 패치 전 바이너리로 잰 값이다. 기획안은 10/7 제출 완료. **이후 발표·기사 수치는 0-4f 값(1,000칸 엣지 p95 0.34초, IN 경유 0.63초, 칸마다 AE 458 req/s)을 쓴다.** 단 IN은 SQLite 조건.
+3. **AI ①이 100칸에서 비현실적**(O(N²)): 설치 때 1회 또는 운전 데이터로 온라인 추정으로 바꿀 것.
+4. **100칸 AI ③ 눈부심 1.25 h**(12칸 0 h): 학습 일수·특징값 확인.
+5. **tinyIoT 버그 6건**(10-07 최신 커밋 재확인: 1·5번 수정됨, 3·4·6번 남음, 2번 미확인. 공식 정리 `sim/TINYIOT_BUG_REPORTS.md`, 재현 스크립트 `sim/repro/`, 어디에도 올리지 않음)을 어디에 알릴지: 현재 규칙은 tinyIoT 관련 git에 배포 금지(gustjr3332만). 반면 Judge points는 공개 포럼 활동을 점수화한다. 이슈 보고를 하려면 규칙의 범위를 정해야 한다(보류).
+   - **10-06 최신 커밋 재확인(일부)**: 우리가 쓰는 tinyIoT는 4월 7일 커밋(`832205f`)이고 upstream은 이미 123커밋 앞선 `c140495`(10-06)다. 패치 없이 빌드해 보니 **1번은 고쳐짐**, **3번은 그대로**(직접 CIN은 알림이 가고 fopt CIN은 안 감), 2·4·5번은 미확인, **6번은 판정 못 함**(3번 때문에 재현 스크립트가 돌지 않음, 동시 쓰기 변형은 결과 전에 중단). upstream에 락 관련 커밋(`revert route() lock`, `Fix rt->cb mainlock`)이 있으나 효과는 미검증. **우리 패치는 4월 코드 기준이라 최신 커밋에 그대로 적용된다는 보장이 없다.** 이슈를 올리기 전에 4·5·6번을 최신 커밋에서 다시 확인하고, 개발 기반을 최신 커밋으로 옮길지(패치 재적용·재측정 필요) 결정해야 한다.
+6. 100칸 서보 이동 시간·벽 반사광 같은 물리 모델 단순화(0-4e 한계), 실물 측정으로 교체 예정.
 
 ---
 
